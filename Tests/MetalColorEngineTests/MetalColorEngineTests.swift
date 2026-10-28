@@ -272,6 +272,7 @@ final class MetalColorEngineTests: XCTestCase {
         XCTAssertEqual(cpuRunA.count, metalRun.count)
         var maxAbsoluteDifference: Float = 0
         var maxRelativeDifference: Float = 0
+        var maxRelativeDifferenceIndex = 0
         var nonFiniteCount = 0
         for index in 0..<cpuRunA.count {
             let cpuValue = Float(cpuRunA[index])
@@ -283,10 +284,16 @@ final class MetalColorEngineTests: XCTestCase {
             let difference = abs(cpuValue - metalValue)
             maxAbsoluteDifference = max(maxAbsoluteDifference, difference)
             let denominator = max(abs(cpuValue), abs(metalValue), 1e-6)
-            maxRelativeDifference = max(maxRelativeDifference, difference / denominator)
+            let relativeDifference = difference / denominator
+            if relativeDifference > maxRelativeDifference {
+                maxRelativeDifference = relativeDifference
+                maxRelativeDifferenceIndex = index
+            }
         }
 
         print("[TrackC] Metal-vs-CPU parity: maxAbsDiff=\(maxAbsoluteDifference) maxRelDiff=\(maxRelativeDifference) nonFinite=\(nonFiniteCount)")
+        let worstPixelIndex = maxRelativeDifferenceIndex / 4
+        print("[TrackC] Metal-vs-CPU worst relative sample: x=\(worstPixelIndex % (side * 2)) y=\(worstPixelIndex / (side * 2)) channel=\(maxRelativeDifferenceIndex % 4) cpu=\(Float(cpuRunA[maxRelativeDifferenceIndex])) cpuHalfBits=\(cpuRunA[maxRelativeDifferenceIndex].bitPattern) metal=\(Float(metalRun[maxRelativeDifferenceIndex])) metalHalfBits=\(metalRun[maxRelativeDifferenceIndex].bitPattern)")
         XCTAssertEqual(nonFiniteCount, 0, "Metal or CPU output contained NaN/Inf")
         let outputPlane = (side * 2) * (side * 2)
         XCTAssertEqual(cpuRunA.count, outputPlane * 4)
@@ -298,13 +305,13 @@ final class MetalColorEngineTests: XCTestCase {
         XCTAssertLessThanOrEqual(maxRelativeDifference, 5e-3, "Metal vs CPU relative parity exceeded 5e-3")
 
         // Intermediate planes must agree tightly as well (they feed the ±0.55 chroma clamp).
-        let cpuTensors = try hardwareProcessor.extractLogNormalizedRGBTile(
+        var cpuTensors = try hardwareProcessor.extractLogNormalizedRGBTile(
             from: source.buffer,
             tile: tile,
             globalMaxLuminance: globalMaxLuminance,
             forceCPU: true
         )
-        let metalTensors = try hardwareProcessor.extractLogNormalizedRGBTile(
+        var metalTensors = try hardwareProcessor.extractLogNormalizedRGBTile(
             from: source.buffer,
             tile: tile,
             globalMaxLuminance: globalMaxLuminance,
@@ -320,6 +327,39 @@ final class MetalColorEngineTests: XCTestCase {
         }
         print("[TrackC] Metal-vs-CPU max log-plane difference: \(maxLogPlaneDifference)")
         XCTAssertLessThanOrEqual(maxLogPlaneDifference, 1e-3, "Metal vs CPU log-normalized planes diverged by more than one Float16 ulp")
+
+        // Keep a failed hosted-GPU run diagnosable without relaxing the parity gate. In particular,
+        // one half-subnormal step can look like a large relative error near a chroma cancellation.
+        if maxRelativeDifference > 5e-3 {
+            let sourceX = (worstPixelIndex % (side * 2)) / 2
+            let sourceY = (worstPixelIndex / (side * 2)) / 2
+            let sourceIndex = sourceY * side + sourceX
+            let planeCount = side * side
+            let inputRGBA = Array(source.pixelValues[(sourceIndex * 4)..<(sourceIndex * 4 + 4)])
+            let cpuLog = (0..<3).map { Float(cpuTensors.planarTensorFP16[$0 * planeCount + sourceIndex]) }
+            let metalLog = (0..<3).map { Float(metalTensors.planarTensorFP16[$0 * planeCount + sourceIndex]) }
+            print("[TrackC] Metal-vs-CPU worst source: x=\(sourceX) y=\(sourceY) rgba=\(inputRGBA) cpuLog=\(cpuLog) metalLog=\(metalLog) logK=\(cpuTensors.logConstantK)")
+            try hardwareProcessor.decoupleLuminanceAndChrominance(tensors: &cpuTensors, forceCPU: true)
+            try hardwareProcessor.decoupleLuminanceAndChrominance(tensors: &metalTensors, forceCPU: false)
+            print("[TrackC] Metal-vs-CPU worst source decoupled: cpuY=\(Float(cpuTensors.planarTensorFP16[sourceIndex])) metalY=\(Float(metalTensors.planarTensorFP16[sourceIndex])) cpuCb=\(cpuTensors.cbPlane[sourceIndex]) metalCb=\(metalTensors.cbPlane[sourceIndex]) cpuCr=\(cpuTensors.crPlane[sourceIndex]) metalCr=\(metalTensors.crPlane[sourceIndex])")
+
+            func reconstructedSample(_ tensors: PreparedTileTensors, forceCPU: Bool) throws -> Float {
+                let y = makeIdentityUpscaledY(tensors: tensors, scale: 2)
+                var output = [Float16](repeating: 0, count: cpuRunA.count)
+                try y.withUnsafeBufferPointer { input in
+                    try output.withUnsafeMutableBufferPointer { destination in
+                        try hardwareProcessor.reconstructUpscaledTile(
+                            upscaledYPlanarFP16: input, tensors: tensors, scale: 2,
+                            destinationRGBA16F: destination.baseAddress!, forceCPU: forceCPU
+                        )
+                    }
+                }
+                return Float(output[maxRelativeDifferenceIndex])
+            }
+            let cpuToMetal = try reconstructedSample(cpuTensors, forceCPU: false)
+            let metalToCPU = try reconstructedSample(metalTensors, forceCPU: true)
+            print("[TrackC] Metal-vs-CPU worst sample stage isolation: cpuForwardMetalInverse=\(cpuToMetal) metalForwardCPUInverse=\(metalToCPU)")
+        }
     }
 
     // MARK: - Edge cases
