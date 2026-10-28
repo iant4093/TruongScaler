@@ -1,0 +1,26 @@
+[
+  {
+    "family": "edsr",
+    "path": "edsr-LICENSE",
+    "url": "https://raw.githubusercontent.com/sanghyun-son/EDSR-PyTorch/8dba5581a7502b92de9641eb431130d6c8ca5d7f/LICENSE",
+    "revision": "8dba5581a7502b92de9641eb431130d6c8ca5d7f",
+    "sha256": "5158c789527acaf2d86cfd931bd511438b80652962efd0dc927192f0e0518ddb",
+    "localFile": "ModelConversionTools/vendor/edsr/LICENSE"
+  },
+  {
+    "family": "edsr",
+    "path": "edsr-src-model-edsr.py",
+    "url": "https://raw.githubusercontent.com/sanghyun-son/EDSR-PyTorch/8dba5581a7502b92de9641eb431130d6c8ca5d7f/src/model/edsr.py",
+    "revision": "8dba5581a7502b92de9641eb431130d6c8ca5d7f",
+    "sha256": "6933aae8d2cf08dfd9ee672ccdd4ca8f305e74c0dae2e69ef86bb119ee2a4981",
+    "localFile": "ModelConversionTools/vendor/edsr/edsr.py"
+  },
+  {
+    "family": "edsr",
+    "path": "edsr-src-model-common.py",
+    "url": "https://raw.githubusercontent.com/sanghyun-son/EDSR-PyTorch/8dba5581a7502b92de9641eb431130d6c8ca5d7f/src/model/common.py",
+    "revision": "8dba5581a7502b92de9641eb431130d6c8ca5d7f",
+    "sha256": "1ff419312cd2793a006d409ba5de5c920aac587c9810cae2bb6ba62d3d99090c",
+    "localFile": "ModelConversionTools/vendor/edsr/common.py"
+  }
+]

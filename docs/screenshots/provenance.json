@@ -1,0 +1,38 @@
+{
+  "capture" : "Actual production SwiftUI\/UIKit screens in an iOS simulator, 402×874 points at 3×; private temporary libraries",
+  "fixtureProvenance" : "Tests\/TiledInferenceEngineTests\/Fixtures\/quality\/fixture-provenance.json",
+  "fixtureSHA256" : {
+    "photo_flower_lr_512x384.png" : "c491d8dc73fa3bc22cbc566a32926c576da2406ee514bbcd5dbeffe850b775ab",
+    "photo_landscape_lr_512x384.png" : "d7a2301a4872edbc158eb510891ad57cbc514bf6755132a0d14b4b14a3a0052a"
+  },
+  "photographSources" : [
+    {
+      "author" : "W.carter",
+      "bytes" : 4592572,
+      "file" : "common-blue-sow-thistle.jpg",
+      "license" : "CC0 1.0",
+      "licenseURL" : "https:\/\/creativecommons.org\/publicdomain\/zero\/1.0\/",
+      "sha256" : "c59bbee0feafedf0d1cf839d19ea35986a0966ca6483b36a49c97a7ab034ce3f",
+      "title" : "Common Blue-Sow-Thistle in a patch of sunlight",
+      "url" : "https:\/\/commons.wikimedia.org\/wiki\/File:Common_Blue-Sow-Thistle_in_a_patch_of_sunlight.jpg"
+    },
+    {
+      "author" : "Julian Lupyan",
+      "bytes" : 14383656,
+      "file" : "urbino-sunset.jpg",
+      "license" : "CC0 1.0",
+      "licenseURL" : "https:\/\/creativecommons.org\/publicdomain\/zero\/1.0\/",
+      "sha256" : "7cb5693ec47a37c16f6f39323e4b7ad2b313c50a2fe0901e0cf49a20f65c3079",
+      "title" : "Landscape South of Urbino, Taken from Parco della Resistenza at Late Sunset",
+      "url" : "https:\/\/commons.wikimedia.org\/wiki\/File:Landscape_South_of_Urbino,_Taken_from_Parco_della_Resistenza_at_Late_Sunset.jpg"
+    }
+  ],
+  "processing" : "Real StudioViewModel production initializer (.requireProductionModels), QuickSRNet-Large native 2×, denoise off; two 512×384 inputs saved as 1024×768 TIFF results and reopened through portable records",
+  "qualityScope" : "Screenshots illustrate the interface; they do not establish physical-phone performance or image-quality superiority",
+  "screenshots" : [
+    "input-library.png",
+    "processed-viewer.png",
+    "output-library.png",
+    "model-settings.png"
+  ]
+}

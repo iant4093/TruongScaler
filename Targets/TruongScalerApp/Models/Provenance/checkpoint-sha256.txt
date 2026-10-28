@@ -1,0 +1,2 @@
+0c6e0f4e2b444b161d6bce22852b0e2aa0dc391ef804c99e867882dd9715ad9d  quicksrnet-large-2x.pth
+1bc9523228fdc3b0a5ddb0d7062001e22b31bbb398ae09cfdefb97e8ee06e171  edsr-baseline-x2.pt

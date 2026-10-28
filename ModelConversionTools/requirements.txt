@@ -1,0 +1,4 @@
+# Isolated, reproducible native 2× conversion/reference dependencies (Python 3.12).
+torch==2.7.0
+coremltools==9.0
+numpy==2.5.4

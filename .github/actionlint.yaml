@@ -1,0 +1,4 @@
+# Official GitHub-hosted Xcode 27 preview label; not a private runner.
+self-hosted-runner:
+  labels:
+    - xcode-27

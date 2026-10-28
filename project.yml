@@ -1,0 +1,146 @@
+name: TruongScaler
+options:
+  bundleIdPrefix: com.iantruong
+  deploymentTarget:
+    iOS: "27.0"
+packages:
+  TruongScalerPackage:
+    path: .
+targets:
+  TruongScalerApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: Targets/TruongScalerApp
+        excludes:
+          - Models
+      # Folder reference: copies the complete trained-model tree (including provenance
+      # and notices) as Models/ inside the built .app, matching the production registry's
+      # on-device search path. Do not turn these into flat per-file resources.
+      - path: Targets/TruongScalerApp/Models
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - package: TruongScalerPackage
+        product: DeepZoomGalleryUI
+      - package: TruongScalerPackage
+        product: TruongScalerCore
+      - package: TruongScalerPackage
+        product: BackgroundJobManager
+      - target: TruongScalerLiveActivityExtension
+        embed: true
+    entitlements:
+      path: Targets/TruongScalerApp/TruongScalerApp.entitlements
+      properties:
+        com.apple.developer.kernel.increased-memory-limit: true
+        com.apple.security.application-groups:
+          - group.com.iantruong.imagingsuite
+    info:
+      path: Targets/TruongScalerApp/Info.plist
+      properties:
+        CFBundleDisplayName: TruongScaler
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSSupportsLiveActivities: true
+        NSSupportsLiveActivitiesFrequentUpdates: true
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.iantruong.truongscaler.continued-processing.*
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLName: com.iantruong.truongscaler.handoff
+            CFBundleURLSchemes:
+              - truongscaler
+        LSApplicationQueriesSchemes:
+          - truongnoiser
+        NSPhotoLibraryUsageDescription: "TruongScaler requires access to your Photo Library to load full-resolution RAW, ProRAW, HEIC, and JPEG images for super-resolution."
+        NSPhotoLibraryAddUsageDescription: "TruongScaler requires permission to save upscaled images to your Photo Library."
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.iantruong.truongscaler
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        # Keep the current system-green accent and shipped TS artwork in both build configurations.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0"
+        SWIFT_VERSION: "6.0"
+  TruongScalerLiveActivityExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Targets/TruongScalerLiveActivityExtension
+    dependencies:
+      - package: TruongScalerPackage
+        product: TruongScalerCore
+      - package: TruongScalerPackage
+        product: ScalerActivityUI
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+    entitlements:
+      path: Targets/TruongScalerLiveActivityExtension/TruongScalerLiveActivityExtension.entitlements
+      properties: {}
+    info:
+      path: Targets/TruongScalerLiveActivityExtension/Info.plist
+      properties:
+        CFBundleDisplayName: TruongScalerLiveActivity
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.iantruong.truongscaler.liveactivity
+        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0"
+        SWIFT_VERSION: "6.0"
+  TruongScalerHostTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/TruongScalerHostTests
+    dependencies:
+      - target: TruongScalerApp
+      - package: TruongScalerPackage
+        product: DeepZoomGalleryUI
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.iantruong.truongscaler.hosttests
+        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0"
+        SWIFT_VERSION: "6.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/TruongScalerApp.app/TruongScalerApp"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/Frameworks"
+          - "@loader_path/Frameworks"
+schemes:
+  TruongScalerApp:
+    build:
+      targets:
+        TruongScalerApp: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    archive:
+      config: Release
+  TruongScalerHostTests:
+    build:
+      targets:
+        TruongScalerHostTests: [test, analyze]
+    test:
+      config: Debug
+      targets:
+        - TruongScalerHostTests

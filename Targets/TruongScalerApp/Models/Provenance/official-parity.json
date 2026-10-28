@@ -1,0 +1,386 @@
+[
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "all",
+    "pattern": "black",
+    "psnrDB": 93.20162629253011,
+    "maxError": 0.00023825326934456825,
+    "seconds": 0.008345749985892326
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "all",
+    "pattern": "white",
+    "psnrDB": 69.67344449981607,
+    "maxError": 0.0014954805374145508,
+    "seconds": 0.006492332962807268
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "all",
+    "pattern": "near-black",
+    "psnrDB": 88.91246467709973,
+    "maxError": 0.00024387618759647012,
+    "seconds": 0.004769082996062934
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "all",
+    "pattern": "gradient",
+    "psnrDB": 70.11450786025996,
+    "maxError": 0.001376807689666748,
+    "seconds": 0.004415249975863844
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "all",
+    "pattern": "checker",
+    "psnrDB": 75.21156102817415,
+    "maxError": 0.001452326774597168,
+    "seconds": 0.0043496660073287785
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "all",
+    "pattern": "noise",
+    "psnrDB": 68.0199890098873,
+    "maxError": 0.002254664897918701,
+    "seconds": 0.003831957990769297
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "black",
+    "psnrDB": 93.20162629253011,
+    "maxError": 0.00023825326934456825,
+    "seconds": 0.0067614170257002115
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "white",
+    "psnrDB": 69.67344449981607,
+    "maxError": 0.0014954805374145508,
+    "seconds": 0.0057975000236183405
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "near-black",
+    "psnrDB": 88.91246467709973,
+    "maxError": 0.00024387618759647012,
+    "seconds": 0.004186584032140672
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "gradient",
+    "psnrDB": 70.11450786025996,
+    "maxError": 0.001376807689666748,
+    "seconds": 0.0038958750083111227
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "checker",
+    "psnrDB": 75.21156102817415,
+    "maxError": 0.001452326774597168,
+    "seconds": 0.0038528749719262123
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "noise",
+    "psnrDB": 68.0199890098873,
+    "maxError": 0.002254664897918701,
+    "seconds": 0.003952166996896267
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "black",
+    "psnrDB": 114.75958490417511,
+    "maxError": 2.022460103034973e-05,
+    "seconds": 0.02834004204487428
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "white",
+    "psnrDB": 70.54933579953858,
+    "maxError": 0.0009765625,
+    "seconds": 0.005216541001573205
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "near-black",
+    "psnrDB": 113.4917318577703,
+    "maxError": 2.1118554286658764e-05,
+    "seconds": 0.004716249997727573
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "gradient",
+    "psnrDB": 70.15383672563655,
+    "maxError": 0.001206040382385254,
+    "seconds": 0.004755124973598868
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "checker",
+    "psnrDB": 73.32580252744313,
+    "maxError": 0.0011675357818603516,
+    "seconds": 0.004232000035699457
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "noise",
+    "psnrDB": 68.34181863084171,
+    "maxError": 0.0020657777786254883,
+    "seconds": 0.004196625028271228
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_only",
+    "pattern": "black",
+    "psnrDB": 101.25544187664983,
+    "maxError": 0.00010943226516246796,
+    "seconds": 0.007732541998848319
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_only",
+    "pattern": "white",
+    "psnrDB": 69.15432478411181,
+    "maxError": 0.002292633056640625,
+    "seconds": 0.007214374956674874
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_only",
+    "pattern": "near-black",
+    "psnrDB": 96.64426569615483,
+    "maxError": 0.00018416251987218857,
+    "seconds": 0.007314167043659836
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_only",
+    "pattern": "gradient",
+    "psnrDB": 66.81512646135462,
+    "maxError": 0.003029346466064453,
+    "seconds": 0.007345459016505629
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_only",
+    "pattern": "checker",
+    "psnrDB": 63.5059738395796,
+    "maxError": 0.005234122276306152,
+    "seconds": 0.00717787496978417
+  },
+  {
+    "model": "QuickSRNet_Large_x2_192",
+    "backendRequested": "cpu_only",
+    "pattern": "noise",
+    "psnrDB": 53.83094558564363,
+    "maxError": 0.011983722448348999,
+    "seconds": 0.007435040955897421
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "all",
+    "pattern": "black",
+    "psnrDB": 93.37446241182555,
+    "maxError": 0.00023825326934456825,
+    "seconds": 0.006351207965053618
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "all",
+    "pattern": "white",
+    "psnrDB": 69.65942070741922,
+    "maxError": 0.0014954805374145508,
+    "seconds": 0.0043036669958382845
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "all",
+    "pattern": "near-black",
+    "psnrDB": 88.99426921638889,
+    "maxError": 0.00024387618759647012,
+    "seconds": 0.0040723749552853405
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "all",
+    "pattern": "gradient",
+    "psnrDB": 70.03881696881696,
+    "maxError": 0.0014525055885314941,
+    "seconds": 0.0038903329987078905
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "all",
+    "pattern": "checker",
+    "psnrDB": 75.28930752571799,
+    "maxError": 0.001452326774597168,
+    "seconds": 0.003836957970634103
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "all",
+    "pattern": "noise",
+    "psnrDB": 68.04359080308654,
+    "maxError": 0.0025287866592407227,
+    "seconds": 0.003896249982062727
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "black",
+    "psnrDB": 93.37446241182555,
+    "maxError": 0.00023825326934456825,
+    "seconds": 0.01082133298041299
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "white",
+    "psnrDB": 69.65942070741922,
+    "maxError": 0.0014954805374145508,
+    "seconds": 0.004295374965295196
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "near-black",
+    "psnrDB": 88.99426921638889,
+    "maxError": 0.00024387618759647012,
+    "seconds": 0.004002625006251037
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "gradient",
+    "psnrDB": 70.03881696881696,
+    "maxError": 0.0014525055885314941,
+    "seconds": 0.003906375030055642
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "checker",
+    "psnrDB": 75.28930752571799,
+    "maxError": 0.001452326774597168,
+    "seconds": 0.00394329201662913
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_ne",
+    "pattern": "noise",
+    "psnrDB": 68.04359080308654,
+    "maxError": 0.0025287866592407227,
+    "seconds": 0.003886583959683776
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "black",
+    "psnrDB": 115.02584379038616,
+    "maxError": 2.022460103034973e-05,
+    "seconds": 0.01876220799749717
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "white",
+    "psnrDB": 70.5346072218679,
+    "maxError": 0.0009765625,
+    "seconds": 0.006193708977662027
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "near-black",
+    "psnrDB": 113.65863286477149,
+    "maxError": 2.1118554286658764e-05,
+    "seconds": 0.005845874955412
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "gradient",
+    "psnrDB": 70.45317974540504,
+    "maxError": 0.0014342069625854492,
+    "seconds": 0.00543170899618417
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "checker",
+    "psnrDB": 73.34085633041113,
+    "maxError": 0.0011675357818603516,
+    "seconds": 0.00573025003541261
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_and_gpu",
+    "pattern": "noise",
+    "psnrDB": 68.33140563924377,
+    "maxError": 0.002119898796081543,
+    "seconds": 0.005834124982357025
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_only",
+    "pattern": "black",
+    "psnrDB": 101.71762219007155,
+    "maxError": 0.00010943226516246796,
+    "seconds": 0.023295584018342197
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_only",
+    "pattern": "white",
+    "psnrDB": 69.09060020127075,
+    "maxError": 0.002292633056640625,
+    "seconds": 0.021631417039316148
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_only",
+    "pattern": "near-black",
+    "psnrDB": 96.91596800208657,
+    "maxError": 0.00018416251987218857,
+    "seconds": 0.02422150003258139
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_only",
+    "pattern": "gradient",
+    "psnrDB": 67.4523236038581,
+    "maxError": 0.0035779476165771484,
+    "seconds": 0.026224417029879987
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_only",
+    "pattern": "checker",
+    "psnrDB": 63.59212079856604,
+    "maxError": 0.005234122276306152,
+    "seconds": 0.02623870800016448
+  },
+  {
+    "model": "QuickSRNet_Large_x2_256",
+    "backendRequested": "cpu_only",
+    "pattern": "noise",
+    "psnrDB": 53.81336675377764,
+    "maxError": 0.012146532535552979,
+    "seconds": 0.026396958041004837
+  }
+]

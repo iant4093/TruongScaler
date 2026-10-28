@@ -1,0 +1,14 @@
+{
+  "source": "Existing CC0 fixture collection",
+  "derivation": "Pillow LANCZOS resizing from 2048\u00d71536 to 1024\u00d7768 for native 2\u00d7 targets",
+  "files": [
+    {
+      "file": "photo_landscape_hr_1024x768.png",
+      "sha256": "6e7260c40520fc721252e521155259d542dd1bbe17beb6e7c894b05d9b91b11e"
+    },
+    {
+      "file": "photo_flower_alpha_hr_1024x768.png",
+      "sha256": "51dd1fefdac9edcea695797102921d5924cfa3ba9da0382a5dc6371fb9b47918"
+    }
+  ]
+}

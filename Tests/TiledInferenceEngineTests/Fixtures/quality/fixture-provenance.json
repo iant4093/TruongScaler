@@ -1,0 +1,182 @@
+{
+  "sources": [
+    {
+      "file": "common-blue-sow-thistle.jpg",
+      "title": "Common Blue-Sow-Thistle in a patch of sunlight",
+      "author": "W.carter",
+      "license": "CC0 1.0",
+      "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "url": "https://commons.wikimedia.org/wiki/File:Common_Blue-Sow-Thistle_in_a_patch_of_sunlight.jpg",
+      "sha256": "c59bbee0feafedf0d1cf839d19ea35986a0966ca6483b36a49c97a7ab034ce3f",
+      "bytes": 4592572
+    },
+    {
+      "file": "urbino-sunset.jpg",
+      "title": "Landscape South of Urbino, Taken from Parco della Resistenza at Late Sunset",
+      "author": "Julian Lupyan",
+      "license": "CC0 1.0",
+      "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "url": "https://commons.wikimedia.org/wiki/File:Landscape_South_of_Urbino,_Taken_from_Parco_della_Resistenza_at_Late_Sunset.jpg",
+      "sha256": "7cb5693ec47a37c16f6f39323e4b7ad2b313c50a2fe0901e0cf49a20f65c3079",
+      "bytes": 14383656
+    }
+  ],
+  "derivatives": [
+    {
+      "file": "adversarial_1px_checker_512x384.png",
+      "sha256": "34576a78bbbca07d378b0b6fd8b74af6ab4f9767f2e9c712f1e7a7e9551d468d",
+      "bytes": 1430,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-black-192.png",
+      "sha256": "7b6d48c9f97962ec15a28fb0f1c54d2e329c14300a930f799d496c677445752c",
+      "bytes": 187,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-channel-mix-192.png",
+      "sha256": "6ee8b2ca347bf7be431a89bdb44222a55a6b8fc28d5e1980cd411bd450f4e650",
+      "bytes": 467,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-checker-amp03-192.png",
+      "sha256": "21eea8f4aa55e37c40170ea0ffe585268afe4e807ed870af1a3832f87d243d38",
+      "bytes": 487,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-checker-amp07-192.png",
+      "sha256": "6068778fefc68fccea365774dbcba3bdb37cf4bf1bacfdd0bbbf2d95ecde19da",
+      "bytes": 470,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-checker-offset1-192.png",
+      "sha256": "f08574861491d8471364fc9548391b202184f3979c5924c1f96a1be73d2febd7",
+      "bytes": 467,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-chirp-192.png",
+      "sha256": "dacd1bf25caba80b7332dc9403c51f9d56b14414a168c6e4043ef3bd3d78930d",
+      "bytes": 78754,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-edges-192.png",
+      "sha256": "44f7f6da0b6fc4d5c376e540613e3a807ce11cbea4bb5ca0e8b52981fb77d24b",
+      "bytes": 1874,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-horizontal-stripes-192.png",
+      "sha256": "99b2b27858876320076a3e845c0b82070d543b56d7a5dc1c100d86b95783c36d",
+      "bytes": 316,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-local-patch-192.png",
+      "sha256": "88a04e9db9851eb2dbfcfd01009eb7d25766d147600dc8829858df8218679710",
+      "bytes": 556,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-noise-192.png",
+      "sha256": "e2fb9f5c22231f0bcc5d621fc5b688dcf4810d10fddd141b12fa7547317a6f3f",
+      "bytes": 96928,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-photo-192.png",
+      "sha256": "eb0a8b03888e8655b8533a12065ee204012ec35f47b5e3a04875e3d06beffbb8",
+      "bytes": 73077,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "guard-white-192.png",
+      "sha256": "726bfe3d027b84c8500f73dcc02ed54d818ec7d6158ea2485fbc4a7579e68561",
+      "bytes": 409,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "masked-checker-192.png",
+      "sha256": "d7fc122e92cd68ff763caa2134082ce90056a03c3213f1947fc0bb4141d6bd04",
+      "bytes": 1198,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "masked-horizontal-192.png",
+      "sha256": "07e864520c7739ab4ce9e72416112d2bd1adb498dc07210b12dd3b614b687ab8",
+      "bytes": 491,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "masked-vertical-192.png",
+      "sha256": "db15b91bac36c943f98078036455ab4da9f43470a03c842d5b7f4dd50340fe2a",
+      "bytes": 417,
+      "note": "Synthetic adversarial/stable control derived locally (no third-party content)"
+    },
+    {
+      "file": "photo_flower_alpha_hr_2048x1536.png",
+      "sha256": "e2e70d4c32249e078494cf3e5b639a3364bf45daba0efee0e011aca91765d59d",
+      "bytes": 1973727,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_flower_alpha_lr_512x384.png",
+      "sha256": "a2901337387df15d1d036f64458ada580491c35172d67265cda192da0578a403",
+      "bytes": 333176,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_flower_hdr_512x384.tiff",
+      "sha256": "02d1196afa1cb6f63bfb802f705a6419e5b1aa7fb1aed17d8480555b2a6d3d21",
+      "bytes": 2359600,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_flower_hr_1024x768.png",
+      "sha256": "c26deacf3f2d6973099458c45bc82793954f268d3cedd9af6910799404161580",
+      "bytes": 974833,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_flower_hr_2048x1536.png",
+      "sha256": "0eafb3ddd42bd6ef6e5ee27847bd2881ec8185e947d9f863664877550b4d4412",
+      "bytes": 3483506,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_flower_lr_512x384.png",
+      "sha256": "c491d8dc73fa3bc22cbc566a32926c576da2406ee514bbcd5dbeffe850b775ab",
+      "bytes": 276459,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_flower_noisy06_lr_512x384.png",
+      "sha256": "d4cea885c795ee820d32159e947bce1bee26b95e1273711010567420f1d99182",
+      "bytes": 461951,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_flower_noisy_lr_512x384.png",
+      "sha256": "a7c60a23858db5d17a0834394594258123a42d5136a98f877f38d5b16d8d9663",
+      "bytes": 404864,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_landscape_hr_2048x1536.png",
+      "sha256": "0b5ae58a52d96c25086b91c89078f65baf2a446d928fbefb9280320e84cceb5d",
+      "bytes": 3545902,
+      "note": "CC0 source derivative"
+    },
+    {
+      "file": "photo_landscape_lr_512x384.png",
+      "sha256": "d7a2301a4872edbc158eb510891ad57cbc514bf6755132a0d14b4b14a3a0052a",
+      "bytes": 236417,
+      "note": "CC0 source derivative"
+    }
+  ]
+}

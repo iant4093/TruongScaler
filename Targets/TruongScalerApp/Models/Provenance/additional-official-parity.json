@@ -1,0 +1,562 @@
+[
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "black",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 145.4507012812751,
+    "maxError": 8.677598088979721e-07,
+    "min": -0.0021114349365234375,
+    "max": 0.0030269622802734375,
+    "seconds": 0.055651625036261976
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "white",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 76.3049813026289,
+    "maxError": 0.00048744678497314453,
+    "min": 0.99658203125,
+    "max": 1.0029296875,
+    "seconds": 0.051848708011675626
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "near-black",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 144.0729093730487,
+    "maxError": 8.526258170604706e-07,
+    "min": -0.0020084381103515625,
+    "max": 0.0031299591064453125,
+    "seconds": 0.05088912497740239
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "gradient",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 79.54604218268366,
+    "maxError": 0.0004884004592895508,
+    "min": -0.03277587890625,
+    "max": 1.017578125,
+    "seconds": 0.050762540951836854
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "checker",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 73.76926329483742,
+    "maxError": 0.0009739398956298828,
+    "min": -1.2978515625,
+    "max": 2.529296875,
+    "seconds": 0.050455834018066525
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "luma-checker",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 69.09716289651104,
+    "maxError": 0.0009765625,
+    "min": -2.134765625,
+    "max": 2.982421875,
+    "seconds": 0.05061129201203585
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "noise",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 77.50363415470264,
+    "maxError": 0.0004884004592895508,
+    "min": -0.83203125,
+    "max": 1.798828125,
+    "seconds": 0.05064079200383276
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "black",
+    "backendRequested": "cpu_only",
+    "psnrDB": 145.4507012812751,
+    "maxError": 8.677598088979721e-07,
+    "min": -0.0021114349365234375,
+    "max": 0.0030269622802734375,
+    "seconds": 0.05365612497553229
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "white",
+    "backendRequested": "cpu_only",
+    "psnrDB": 76.3049813026289,
+    "maxError": 0.00048744678497314453,
+    "min": 0.99658203125,
+    "max": 1.0029296875,
+    "seconds": 0.05042020895052701
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "near-black",
+    "backendRequested": "cpu_only",
+    "psnrDB": 144.0729093730487,
+    "maxError": 8.526258170604706e-07,
+    "min": -0.0020084381103515625,
+    "max": 0.0031299591064453125,
+    "seconds": 0.050587792007718235
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "gradient",
+    "backendRequested": "cpu_only",
+    "psnrDB": 79.54604218268366,
+    "maxError": 0.0004884004592895508,
+    "min": -0.03277587890625,
+    "max": 1.017578125,
+    "seconds": 0.05056804098421708
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "checker",
+    "backendRequested": "cpu_only",
+    "psnrDB": 73.76926329483742,
+    "maxError": 0.0009739398956298828,
+    "min": -1.2978515625,
+    "max": 2.529296875,
+    "seconds": 0.05053745803888887
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "luma-checker",
+    "backendRequested": "cpu_only",
+    "psnrDB": 69.09716289651104,
+    "maxError": 0.0009765625,
+    "min": -2.134765625,
+    "max": 2.982421875,
+    "seconds": 0.050825915997847915
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "noise",
+    "backendRequested": "cpu_only",
+    "psnrDB": 77.50363415470264,
+    "maxError": 0.0004884004592895508,
+    "min": -0.83203125,
+    "max": 1.798828125,
+    "seconds": 0.05059037503087893
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "black",
+    "backendRequested": "all",
+    "psnrDB": 134.5808702824371,
+    "maxError": 9.880313882604241e-07,
+    "min": -0.0021114349365234375,
+    "max": 0.0030269622802734375,
+    "seconds": 0.46480654104379937
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "white",
+    "backendRequested": "all",
+    "psnrDB": 76.30497000312668,
+    "maxError": 0.00048744678497314453,
+    "min": 0.99658203125,
+    "max": 1.0029296875,
+    "seconds": 0.0113867920008488
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "near-black",
+    "backendRequested": "all",
+    "psnrDB": 133.26151563809856,
+    "maxError": 8.526258170604706e-07,
+    "min": -0.0020084381103515625,
+    "max": 0.0031299591064453125,
+    "seconds": 0.01125783397583291
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "gradient",
+    "backendRequested": "all",
+    "psnrDB": 79.54603344714738,
+    "maxError": 0.0004881620407104492,
+    "min": -0.03277587890625,
+    "max": 1.017578125,
+    "seconds": 0.011246792040765285
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "checker",
+    "backendRequested": "all",
+    "psnrDB": 73.76917637011785,
+    "maxError": 0.0009791851043701172,
+    "min": -1.2978515625,
+    "max": 2.529296875,
+    "seconds": 0.01072391599882394
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "luma-checker",
+    "backendRequested": "all",
+    "psnrDB": 69.09715950230773,
+    "maxError": 0.0009765625,
+    "min": -2.134765625,
+    "max": 2.982421875,
+    "seconds": 0.010748124972451478
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "noise",
+    "backendRequested": "all",
+    "psnrDB": 77.50360905105428,
+    "maxError": 0.0004887580871582031,
+    "min": -0.83203125,
+    "max": 1.798828125,
+    "seconds": 0.010720374993979931
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "black",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 134.5808702824371,
+    "maxError": 9.880313882604241e-07,
+    "min": -0.0021114349365234375,
+    "max": 0.0030269622802734375,
+    "seconds": 0.02395300002535805
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "white",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 76.30497000312668,
+    "maxError": 0.00048744678497314453,
+    "min": 0.99658203125,
+    "max": 1.0029296875,
+    "seconds": 0.011419583985116333
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "near-black",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 133.26151563809856,
+    "maxError": 8.526258170604706e-07,
+    "min": -0.0020084381103515625,
+    "max": 0.0031299591064453125,
+    "seconds": 0.010741957987193018
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "gradient",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 79.54603344714738,
+    "maxError": 0.0004881620407104492,
+    "min": -0.03277587890625,
+    "max": 1.017578125,
+    "seconds": 0.010696417011786252
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "checker",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 73.76917637011785,
+    "maxError": 0.0009791851043701172,
+    "min": -1.2978515625,
+    "max": 2.529296875,
+    "seconds": 0.010714375006500632
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "luma-checker",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 69.09715950230773,
+    "maxError": 0.0009765625,
+    "min": -2.134765625,
+    "max": 2.982421875,
+    "seconds": 0.010743291000835598
+  },
+  {
+    "model": "EDSR_Baseline_x2_192",
+    "pattern": "noise",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 77.50360905105428,
+    "maxError": 0.0004887580871582031,
+    "min": -0.83203125,
+    "max": 1.798828125,
+    "seconds": 0.01065908296732232
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "black",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 145.69135375307667,
+    "maxError": 8.677598088979721e-07,
+    "min": -0.0021114349365234375,
+    "max": 0.0030269622802734375,
+    "seconds": 0.2030095829977654
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "white",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 76.32593280721105,
+    "maxError": 0.00048744678497314453,
+    "min": 0.99658203125,
+    "max": 1.0029296875,
+    "seconds": 0.19653816701611504
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "near-black",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 144.45752379217058,
+    "maxError": 8.526258170604706e-07,
+    "min": -0.0020084381103515625,
+    "max": 0.0031299591064453125,
+    "seconds": 0.18884575000265613
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "gradient",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 79.48346137172516,
+    "maxError": 0.00048804283142089844,
+    "min": -0.032135009765625,
+    "max": 1.017578125,
+    "seconds": 0.1867912919842638
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "checker",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 73.80372464243902,
+    "maxError": 0.0009739398956298828,
+    "min": -1.2978515625,
+    "max": 2.529296875,
+    "seconds": 0.18764491594629362
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "luma-checker",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 69.02932403773707,
+    "maxError": 0.0009765625,
+    "min": -2.134765625,
+    "max": 2.982421875,
+    "seconds": 0.19174187496537343
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "noise",
+    "backendRequested": "cpu_and_ne",
+    "psnrDB": 77.48993074043427,
+    "maxError": 0.0004884004592895508,
+    "min": -0.87939453125,
+    "max": 1.8818359375,
+    "seconds": 0.18748324998887256
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "black",
+    "backendRequested": "cpu_only",
+    "psnrDB": 145.69135375307667,
+    "maxError": 8.677598088979721e-07,
+    "min": -0.0021114349365234375,
+    "max": 0.0030269622802734375,
+    "seconds": 0.19616658298764378
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "white",
+    "backendRequested": "cpu_only",
+    "psnrDB": 76.32593280721105,
+    "maxError": 0.00048744678497314453,
+    "min": 0.99658203125,
+    "max": 1.0029296875,
+    "seconds": 0.1898672910174355
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "near-black",
+    "backendRequested": "cpu_only",
+    "psnrDB": 144.45752379217058,
+    "maxError": 8.526258170604706e-07,
+    "min": -0.0020084381103515625,
+    "max": 0.0031299591064453125,
+    "seconds": 0.1872851249645464
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "gradient",
+    "backendRequested": "cpu_only",
+    "psnrDB": 79.48346137172516,
+    "maxError": 0.00048804283142089844,
+    "min": -0.032135009765625,
+    "max": 1.017578125,
+    "seconds": 0.18912262498633936
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "checker",
+    "backendRequested": "cpu_only",
+    "psnrDB": 73.80372464243902,
+    "maxError": 0.0009739398956298828,
+    "min": -1.2978515625,
+    "max": 2.529296875,
+    "seconds": 0.1902115829871036
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "luma-checker",
+    "backendRequested": "cpu_only",
+    "psnrDB": 69.02932403773707,
+    "maxError": 0.0009765625,
+    "min": -2.134765625,
+    "max": 2.982421875,
+    "seconds": 0.19022070796927437
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "noise",
+    "backendRequested": "cpu_only",
+    "psnrDB": 77.48993074043427,
+    "maxError": 0.0004884004592895508,
+    "min": -0.87939453125,
+    "max": 1.8818359375,
+    "seconds": 0.190076916012913
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "black",
+    "backendRequested": "all",
+    "psnrDB": 134.49513839687316,
+    "maxError": 9.880313882604241e-07,
+    "min": -0.0021114349365234375,
+    "max": 0.0030269622802734375,
+    "seconds": 0.040671124996151775
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "white",
+    "backendRequested": "all",
+    "psnrDB": 76.32592377201851,
+    "maxError": 0.00048744678497314453,
+    "min": 0.99658203125,
+    "max": 1.0029296875,
+    "seconds": 0.01941233401885256
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "near-black",
+    "backendRequested": "all",
+    "psnrDB": 133.02697243447952,
+    "maxError": 8.526258170604706e-07,
+    "min": -0.0020084381103515625,
+    "max": 0.0031299591064453125,
+    "seconds": 0.018731791991740465
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "gradient",
+    "backendRequested": "all",
+    "psnrDB": 79.48345459192358,
+    "maxError": 0.00048804283142089844,
+    "min": -0.032135009765625,
+    "max": 1.017578125,
+    "seconds": 0.018743833992630243
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "checker",
+    "backendRequested": "all",
+    "psnrDB": 73.8036557862697,
+    "maxError": 0.0009791851043701172,
+    "min": -1.2978515625,
+    "max": 2.529296875,
+    "seconds": 0.018713208031840622
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "luma-checker",
+    "backendRequested": "all",
+    "psnrDB": 69.02932195244043,
+    "maxError": 0.0009765625,
+    "min": -2.134765625,
+    "max": 2.982421875,
+    "seconds": 0.018819541961420327
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "noise",
+    "backendRequested": "all",
+    "psnrDB": 77.48990347514585,
+    "maxError": 0.0004889965057373047,
+    "min": -0.87939453125,
+    "max": 1.8818359375,
+    "seconds": 0.018759374972432852
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "black",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 134.49513839687316,
+    "maxError": 9.880313882604241e-07,
+    "min": -0.0021114349365234375,
+    "max": 0.0030269622802734375,
+    "seconds": 0.033347041986417025
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "white",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 76.32592377201851,
+    "maxError": 0.00048744678497314453,
+    "min": 0.99658203125,
+    "max": 1.0029296875,
+    "seconds": 0.019272874982561916
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "near-black",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 133.02697243447952,
+    "maxError": 8.526258170604706e-07,
+    "min": -0.0020084381103515625,
+    "max": 0.0031299591064453125,
+    "seconds": 0.018627499986905605
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "gradient",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 79.48345459192358,
+    "maxError": 0.00048804283142089844,
+    "min": -0.032135009765625,
+    "max": 1.017578125,
+    "seconds": 0.018625875003635883
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "checker",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 73.8036557862697,
+    "maxError": 0.0009791851043701172,
+    "min": -1.2978515625,
+    "max": 2.529296875,
+    "seconds": 0.018679041997529566
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "luma-checker",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 69.02932195244043,
+    "maxError": 0.0009765625,
+    "min": -2.134765625,
+    "max": 2.982421875,
+    "seconds": 0.01895479200175032
+  },
+  {
+    "model": "EDSR_Baseline_x2_256",
+    "pattern": "noise",
+    "backendRequested": "cpu_and_gpu",
+    "psnrDB": 77.48990347514585,
+    "maxError": 0.0004889965057373047,
+    "min": -0.87939453125,
+    "max": 1.8818359375,
+    "seconds": 0.01865054201334715
+  }
+]
