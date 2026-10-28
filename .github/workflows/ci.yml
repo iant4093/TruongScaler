@@ -63,13 +63,13 @@ jobs:
   native:
     name: Native Simulator tests
     runs-on: xcode-27
-    timeout-minutes: 25
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - name: Native Simulator tests
-        timeout-minutes: 20
+        timeout-minutes: 40
         run: bash scripts/test.sh native
       - name: Upload native results and logs
         if: always()

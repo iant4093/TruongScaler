@@ -11,14 +11,12 @@
         A20261026020000000000002 = {isa = PBXBuildFile; fileRef = A20261026010000000000002; };
 
 
-        A202610260000000000000001 /* TruongScalerHostTests */ = {isa = PBXNativeTarget; name = TruongScalerHostTests; productName = TruongScalerHostTests; productType = "com.apple.product-type.bundle.unit-test"; productReference = A202610260000000000000002; buildConfigurationList = A202610260000000000000009; buildPhases = (A202610260000000000000005, A202610260000000000000006,); buildRules = (); dependencies = (A20261026000000000000000C,); packageProductDependencies = (A202610260000000000000007,); };
+        A202610260000000000000001 /* TruongScalerHostTests */ = {isa = PBXNativeTarget; name = TruongScalerHostTests; productName = TruongScalerHostTests; productType = "com.apple.product-type.bundle.unit-test"; productReference = A202610260000000000000002; buildConfigurationList = A202610260000000000000009; buildPhases = (A202610260000000000000005, A202610260000000000000006,); buildRules = (); dependencies = (A20261026000000000000000C,); packageProductDependencies = (); };
         A202610260000000000000002 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TruongScalerHostTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
         A202610260000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/TruongScalerHostTests/NativeSharePresentationTests.swift; sourceTree = SOURCE_ROOT; };
         A202610260000000000000004 = {isa = PBXBuildFile; fileRef = A202610260000000000000003; };
         A202610260000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A20261026020000000000002, A20261026020000000000001, A202610260000000000000004,); runOnlyForDeploymentPostprocessing = 0; };
-        A202610260000000000000006 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A202610260000000000000008,); runOnlyForDeploymentPostprocessing = 0; };
-        A202610260000000000000007 = {isa = XCSwiftPackageProductDependency; productName = DeepZoomGalleryUI; };
-        A202610260000000000000008 = {isa = PBXBuildFile; productRef = A202610260000000000000007; };
+        A202610260000000000000006 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
         A202610260000000000000009 = {isa = XCConfigurationList; buildConfigurations = (A20261026000000000000000A, A20261026000000000000000B,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Debug; };
         A20261026000000000000000C = {isa = PBXTargetDependency; target = B128A2455CB90CDF74C87BE9; targetProxy = A20261026000000000000000D; };
         A20261026000000000000000D = {isa = PBXContainerItemProxy; containerPortal = AAE2CCF160119E887206DA6F; proxyType = 1; remoteGlobalIDString = B128A2455CB90CDF74C87BE9; remoteInfo = TruongScalerApp; };

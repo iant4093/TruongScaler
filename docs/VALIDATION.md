@@ -75,3 +75,9 @@ Real Canon EOS R7 CR3 input has **not been tested**. CR3 recognition and native 
 Physical-phone latency, image quality, memory behavior, ANE placement, Files-provider behavior, continued-processing scheduling and signed cross-app handoff remain unmeasured. CPU+NE requests do not prove accelerator placement. Mac/simulator results do not establish equivalence to another photo editor. No physical-device Xcode session, phone signing/install/uninstall/run, publication or deployment was performed during this validation.
 
 Preserved product contracts include native system-green UI, fixed 2× QuickSRNet/EDSR choices at both memory tiers, denoise off, required production weights, durable mmap/journal replay, explicit saved model/dimensions/history, persistent before/after and non-destructive handling of human files/bookmarks/checkpoints.
+
+## CI-host integration follow-up
+
+The Xcode 27.1 hosted run passed all nine package suites, including the repaired Metal regressions, then reached its 20-minute limit as app-hosted tests began. The native budget is now 40 minutes within a 45-minute job. Hosted tests no longer link a second automatic package product: they resolve package code through the application test host. A fresh local DerivedData run passed 18 hosted tests with 1 optional documentation skip; duplicate-class diagnostics fell from 23 to 0, and all four built model assets verified.
+
+The command supervisor now forwards SIGINT/SIGTERM only to its own unreaped command session, escalates resistant descendants, and atomically records the interruption. Eight Python metadata/process-supervision tests passed, including unrelated-process survival. This prevents canceled checks from leaving their task-owned child commands running. Stage reports also retain elapsed time. Current hosted completion and release status remain available in the GitHub workflow.

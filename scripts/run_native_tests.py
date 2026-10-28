@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 LOGS = ROOT / "build/logs"
@@ -20,9 +21,11 @@ stages = []
 
 def run(label, args, env=None):
     print(label, flush=True)
+    stage_started = time.monotonic()
     with (LOGS / (label + ".log")).open("w") as output:
         result = subprocess.run(args, env=env, stdout=output, stderr=subprocess.STDOUT)
-    stages.append({"label": label, "command": args, "exitCode": result.returncode})
+    stages.append({"label": label, "command": args, "exitCode": result.returncode,
+                   "elapsedSeconds": time.monotonic() - stage_started})
     (RESULTS / "native-stages.json").write_text(json.dumps(stages, indent=2) + "\n")
     if result.returncode:
         print((LOGS / (label + ".log")).read_text()[-12000:], file=sys.stderr)

@@ -108,9 +108,9 @@ targets:
     sources:
       - path: Tests/TruongScalerHostTests
     dependencies:
+      # Resolve package symbols through TEST_HOST/BUNDLE_LOADER. Linking the automatic UI
+      # product here makes Xcode create a second dynamic copy of the app's package graph.
       - target: TruongScalerApp
-      - package: TruongScalerPackage
-        product: DeepZoomGalleryUI
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
