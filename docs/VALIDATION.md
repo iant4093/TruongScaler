@@ -1,7 +1,16 @@
 # Validation record
 
-Launch/repository validation was completed locally on **2026-10-28**. Current commands and required checks are in [DEVELOPMENT.md](DEVELOPMENT.md). Generated logs/results stay in the ignored `build/` directory. The preceding application review is recorded separately below; historical agent evidence is archived outside the source repository.
+The launch/repository baseline was validated locally on **2026-10-28**; the subsequent hosted-GPU precision follow-up is recorded separately below. Current commands and required checks are in [DEVELOPMENT.md](DEVELOPMENT.md). Generated logs/results stay in the ignored `build/` directory. The preceding application review is recorded separately below; historical agent evidence is archived outside the source repository.
 
+
+
+## Hosted-GPU precision follow-up — 2026-10-28
+
+The first hosted run correctly stopped publication on a CPU/Metal parity failure. Stage-isolation telemetry identified a synthetic shadow sample stored as half bits142 on CPU versus141 on the hosted GPU (about8.46e-6 versus8.40e-6). Forward tensors matched; fused inverse-matrix arithmetic crossed one Float16 subnormal boundary. An independent Double-expm1 oracle also reproduced precision loss from evaluating `exp(x)-1` near black.
+
+Both inverse paths now use a cancellation-safe small-exponent series, and Metal disables contraction only inside the inverse RGB matrix block to preserve the CPU's separately rounded Float operations. The mathematical curve, half storage, model assets, normalization and export policies are unchanged. The original absolute2e-2 / relative5e-3 parity limits were retained. Thirteen focused Metal tests pass, including the Double oracle and exact isolated matrix sample; full strict Mac execution passed **432 tests with1 optional skip**, plus4 Python fixtures and all asset/checkpoint hashes. Maximum relative CPU/Metal difference was0.00171527, compared with0.00704225 before the matrix repair.
+
+The complete native/bundle counts in the following baseline predate this shader follow-up. Current full native, build, analysis and release gates are independently established by the linked GitHub workflow for the current commit. A failed or superseded run cannot publish the latest release.
 
 ## Launch and repository validation — 2026-10-28
 

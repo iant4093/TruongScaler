@@ -130,6 +130,16 @@ public final class MetalColorProcessor: @unchecked Sendable {
         return float4(w0, w1, w2, w3);
     }
 
+    inline float stableExpMinusOne(float x) {
+        // exp(x) rounds near 1 before subtraction, losing shadow bits. Metal has no expm1;
+        // the degree-six series has < 1.1e-10 truncation error on [0, 0.125].
+        if (x < 0.125f) {
+            return x * (1.0f + x * (0.5f + x * (1.0f / 6.0f + x *
+                (1.0f / 24.0f + x * (1.0f / 120.0f + x * (1.0f / 720.0f))))));
+        }
+        return exp(x) - 1.0f;
+    }
+
     kernel void reconstruct_upscaled_rgba16f(
         device const half* srcUpscaledY [[buffer(0)]],
         device const float* srcCb [[buffer(1)]],
@@ -175,20 +185,26 @@ public final class MetalColorProcessor: @unchecked Sendable {
         crUp = clamp(crUp, -0.55f, 0.55f);
         aUp  = clamp(aUp, 0.0f, 1.0f);
 
-        float rn = clamp(yUp + 1.54205088f * crUp, 0.0f, 1.2f);
-        float bn = clamp(yUp + 1.84142182f * cbUp, 0.0f, 1.2f);
-        // Inverse of the Display P3 forward matrix above:
-        //   R = Y + 1.54205088 Cr, B = Y + 1.84142182 Cb,
-        //   G = Y - 0.51043918 Cr - 0.21106322 Cb.
-        // These green coefficients are the numerically inverted values of the
-        // K_R/K_G/K_B luminances and the 0.54305895/0.64848699 chroma scales; they
-        // are not independently rounded constants.
-        float gn = clamp(yUp - 0.51043918f * crUp - 0.21106322f * cbUp, 0.0f, 1.2f);
+        float rn, bn, gn;
+        {
+            // Match the CPU's separately rounded Float operations. A fused Y + coefficient * Cr
+            // changes the near-zero cancellation enough to cross a half-subnormal boundary.
+            #pragma METAL fp contract(off)
+            rn = clamp(yUp + 1.54205088f * crUp, 0.0f, 1.2f);
+            bn = clamp(yUp + 1.84142182f * cbUp, 0.0f, 1.2f);
+            // Inverse of the Display P3 forward matrix above:
+            //   R = Y + 1.54205088 Cr, B = Y + 1.84142182 Cb,
+            //   G = Y - 0.51043918 Cr - 0.21106322 Cb.
+            // These green coefficients are the numerically inverted values of the
+            // K_R/K_G/K_B luminances and the 0.54305895/0.64848699 chroma scales; they
+            // are not independently rounded constants.
+            gn = clamp(yUp - 0.51043918f * crUp - 0.21106322f * cbUp, 0.0f, 1.2f);
+        }
 
         float invAlpha = 1.0f / max(params.alphaConstant, 1e-6f);
-        float rLin = max(0.0f, (exp(rn * params.logConstantK) - 1.0f) * invAlpha);
-        float gLin = max(0.0f, (exp(gn * params.logConstantK) - 1.0f) * invAlpha);
-        float bLin = max(0.0f, (exp(bn * params.logConstantK) - 1.0f) * invAlpha);
+        float rLin = max(0.0f, stableExpMinusOne(rn * params.logConstantK) * invAlpha);
+        float gLin = max(0.0f, stableExpMinusOne(gn * params.logConstantK) * invAlpha);
+        float bLin = max(0.0f, stableExpMinusOne(bn * params.logConstantK) * invAlpha);
 
         dstUpscaledRGBA[outIdx] = half4(half(rLin), half(gLin), half(bLin), half(aUp));
     }
@@ -718,9 +734,9 @@ public final class MetalColorProcessor: @unchecked Sendable {
                             let bn = min(max(yUp + 1.84142182 * cbUp, 0.0), 1.2)
                             let gn = min(max(yUp - 0.51043918 * crUp - 0.21106322 * cbUp, 0.0), 1.2)
 
-                            let rLinear = max(0.0, (exp(rn * logConstantK) - 1.0) * inverseAlpha)
-                            let gLinear = max(0.0, (exp(gn * logConstantK) - 1.0) * inverseAlpha)
-                            let bLinear = max(0.0, (exp(bn * logConstantK) - 1.0) * inverseAlpha)
+                            let rLinear = max(0.0, Self.stableExpMinusOne(rn * logConstantK) * inverseAlpha)
+                            let gLinear = max(0.0, Self.stableExpMinusOne(gn * logConstantK) * inverseAlpha)
+                            let bLinear = max(0.0, Self.stableExpMinusOne(bn * logConstantK) * inverseAlpha)
 
                             let destinationIndex = index * 4
                             destinationRGBA16F[destinationIndex] = Float16(rLinear)
@@ -1017,6 +1033,18 @@ public final class MetalColorProcessor: @unchecked Sendable {
     }
 
     // MARK: - Small helpers
+
+    /// Cancellation-safe inverse log, mirrored in the Metal source. The input is nonnegative after
+    /// channel reconstruction; at small exponents subtracting one from a rounded Float exp discards
+    /// shadow precision before the result reaches Float16 storage.
+    @inline(__always)
+    private static func stableExpMinusOne(_ exponent: Float) -> Float {
+        if exponent < 0.125 {
+            return exponent * (1.0 + exponent * (0.5 + exponent * (1.0 / 6.0 + exponent *
+                (1.0 / 24.0 + exponent * (1.0 / 120.0 + exponent * (1.0 / 720.0))))))
+        }
+        return exp(exponent) - 1
+    }
 
     /// Validate sizes before multiplication or allocation. Public tensor descriptors can be decoded
     /// from persisted data; malformed dimensions must throw rather than trap on integer overflow.

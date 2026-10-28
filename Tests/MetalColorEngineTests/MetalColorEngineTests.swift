@@ -194,6 +194,70 @@ final class MetalColorEngineTests: XCTestCase {
 
     // MARK: - Metal vs CPU parity
 
+    func testInverseLogRetainsNearBlackHalfSubnormals() throws {
+        let processor = MetalColorProcessor()
+        let logK = log(Float(129))
+        // These exact half inputs straddle output rounding boundaries after the inverse log.
+        // Evaluating exp(x) - 1 in Float first cancels significant bits before half storage;
+        // the independent Double expm1 oracle retains them.
+        let logValues = [15, 18, 28, 51, 61, 64, 94, 97, 107, 130, 140, 173]
+            .map { Float16(bitPattern: UInt16($0)) }
+        for value in logValues {
+            let tensors = PreparedTileTensors(
+                tileSize: 1, logConstantK: logK, alphaConstant: 16,
+                planarTensorFP16: [value, value, value],
+                cbPlane: [0], crPlane: [0], alphaPlane: [Float16(0.42)]
+            )
+            let luminance = (Float(value) + Float(value) + Float(value)) * (Float(1) / 3)
+            let expected = Float16(expm1(Double(luminance * logK)) / 16)
+            XCTAssertGreaterThan(expected, 0)
+            for forceCPU in [true, false] {
+                var output = [Float16](repeating: 0, count: 4)
+                try tensors.planarTensorFP16.withUnsafeBufferPointer { input in
+                    try output.withUnsafeMutableBufferPointer { destination in
+                        try processor.reconstructUpscaledTile(
+                            upscaledYPlanarFP16: input, tensors: tensors, scale: 1,
+                            destinationRGBA16F: destination.baseAddress!, forceCPU: forceCPU
+                        )
+                    }
+                }
+                for channel in 0..<3 {
+                    XCTAssertEqual(output[channel], expected,
+                                   "Inverse-log shadow precision: input half bits \(value.bitPattern), channel \(channel), forceCPU=\(forceCPU)")
+                }
+                XCTAssertEqual(output[3], Float16(0.42))
+            }
+        }
+    }
+
+    func testInverseMatrixDoesNotFuseNearBlackCancellation() throws {
+        let processor = MetalColorProcessor()
+        // Exact inverse-stage sample isolated from the hosted parity failure at output (91, 27).
+        // Separate Float multiply/add gives Rn=2.777576446533203e-5; fusing them changes it to
+        // 2.7753219910664484e-5 and moves the stored result from half bits 142 to 141.
+        let y = Float16(0.76318359375)
+        let tensors = PreparedTileTensors(
+            tileSize: 1, logConstantK: log(Float(129)), alphaConstant: 16,
+            planarTensorFP16: [y, y, y],
+            cbPlane: [0.06338625401258469], crPlane: [-0.49489668011665344], alphaPlane: [1]
+        )
+        for forceCPU in [true, false] {
+            var output = [Float16](repeating: 0, count: 4)
+            try tensors.planarTensorFP16.withUnsafeBufferPointer { input in
+                try output.withUnsafeMutableBufferPointer { destination in
+                    try processor.reconstructUpscaledTile(
+                        upscaledYPlanarFP16: input, tensors: tensors, scale: 1,
+                        destinationRGBA16F: destination.baseAddress!, forceCPU: forceCPU
+                    )
+                }
+            }
+            XCTAssertEqual(output[0].bitPattern, 142,
+                           "Inverse matrix must preserve separately rounded CPU Float semantics; forceCPU=\(forceCPU)")
+            XCTAssertTrue(output.allSatisfy(\.isFinite))
+            XCTAssertEqual(output[3], 1)
+        }
+    }
+
     func testMetalVsCPUFallbackParity() throws {
         let globalMaxLuminance: Float = 8.0
         let side = 96
