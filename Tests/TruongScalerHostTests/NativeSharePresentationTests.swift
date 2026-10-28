@@ -201,32 +201,56 @@ final class NativeSharePresentationTests: XCTestCase {
         let first = PhotoShareSession(id: UUID(), surface: .viewer, fileURLs: [url], directory: directory)
         let second = PhotoShareSession(id: UUID(), surface: .viewer, fileURLs: [url], directory: directory)
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousKeyWindow = scene.windows.first(where: \.isKeyWindow)
         let window = UIWindow(windowScene: scene)
         window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
         let parent = UIViewController(), anchor = PhotoShareAnchor()
         window.rootViewController = parent; window.makeKeyAndVisible()
         parent.addChild(anchor); parent.view.addSubview(anchor.view)
         anchor.view.frame = parent.view.bounds; anchor.didMove(toParent: parent)
-        defer { anchor.tearDown(); window.isHidden = true; window.rootViewController = nil }
-        func waitFor(_ predicate: () -> Bool) async throws {
-            for _ in 0..<300 {
-                if predicate() { return }
-                try await Task.sleep(for: .milliseconds(5))
+        addTeardownBlock { @MainActor in
+            // Keep the presenting window alive until UIKit finishes dismissing its share service,
+            // including a failed assertion's cleanup. Detaching it mid-transition can crash the host.
+            if parent.presentedViewController != nil {
+                await withCheckedContinuation { continuation in
+                    parent.dismiss(animated: false) { continuation.resume() }
+                }
             }
-            XCTFail("The native share transition did not complete")
+            anchor.tearDown()
+            window.isHidden = true
+            window.rootViewController = nil
+            previousKeyWindow?.makeKey()
+        }
+        func waitFor(_ phase: String, _ predicate: () -> Bool) async throws {
+            // A fresh hosted simulator starts the system share service lazily. Its first native
+            // presentation can exceed 1.5 seconds even while the main actor remains responsive.
+            let deadline = ContinuousClock.now + .seconds(15)
+            while .now < deadline {
+                if predicate() { return }
+                try await Task.sleep(for: .milliseconds(20))
+            }
+            XCTFail("The native share transition did not complete: \(phase); presented=\(String(describing: parent.presentedViewController)); presenting=\(parent.presentedViewController?.isBeingPresented == true)")
             throw CocoaError(.featureUnsupported)
         }
         var retired: [UUID] = []
         anchor.update(session: first, onDismiss: { retired.append($0) })
-        try await waitFor { parent.presentedViewController is UIActivityViewController && parent.presentedViewController?.isBeingPresented == false }
+        try await waitFor("first presentation") {
+            parent.presentedViewController is UIActivityViewController &&
+                parent.presentedViewController?.isBeingPresented == false &&
+                parent.presentedViewController?.transitionCoordinator == nil
+        }
         let oldController = try XCTUnwrap(parent.presentedViewController as? UIActivityViewController)
         let oldPresentation = try XCTUnwrap(oldController.presentationController)
         let oldCompletion = oldController.completionWithItemsHandler
         await withCheckedContinuation { continuation in parent.dismiss(animated: false) { continuation.resume() } }
         anchor.presentationControllerDidDismiss(oldPresentation)
-        try await waitFor { retired == [first.id] }
+        try await waitFor("first retirement") { retired == [first.id] }
         anchor.update(session: second, onDismiss: { retired.append($0) })
-        try await waitFor { parent.presentedViewController is UIActivityViewController && parent.presentedViewController?.isBeingPresented == false }
+        try await waitFor("second presentation") {
+            parent.presentedViewController is UIActivityViewController &&
+                parent.presentedViewController?.isBeingPresented == false &&
+                parent.presentedViewController?.transitionCoordinator == nil
+        }
         let current = try XCTUnwrap(parent.presentedViewController as? UIActivityViewController)
         oldCompletion?(nil, false, nil, nil)
         anchor.presentationControllerDidDismiss(oldPresentation)
@@ -237,7 +261,7 @@ final class NativeSharePresentationTests: XCTestCase {
         let currentPresentation = try XCTUnwrap(current.presentationController)
         await withCheckedContinuation { continuation in parent.dismiss(animated: false) { continuation.resume() } }
         anchor.presentationControllerDidDismiss(currentPresentation)
-        try await waitFor { retired == [first.id, second.id] }
+        try await waitFor("second retirement") { retired == [first.id, second.id] }
     }
 
     func testBlockedShareRequestRetiresInsteadOfWedging() async throws {
