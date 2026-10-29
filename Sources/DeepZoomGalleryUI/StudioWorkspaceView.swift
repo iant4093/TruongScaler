@@ -362,6 +362,9 @@ public struct UpscaleOptionsFormSheet: View {
                         }
                     }
                     .disabled(viewModel.isProcessing)
+                    Text(viewModel.selectedModel.processingHint)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
 
                     if let metadata = viewModel.metadata {
                         let factor = ScalerSRPolicy.scaleFactor.rawValue

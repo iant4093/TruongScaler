@@ -87,6 +87,7 @@ public enum ScalerSRPolicy {
         let (width, widthOverflow) = checkpoint.sourceWidth.multipliedReportingOverflow(by: scaleFactor.rawValue)
         let (height, heightOverflow) = checkpoint.sourceHeight.multipliedReportingOverflow(by: scaleFactor.rawValue)
         guard checkpoint.config.scaleFactor == scaleFactor, checkpoint.config.backbone.isSupported,
+              checkpoint.tileConfig == TileConfiguration(tier: checkpoint.tileConfig.tier, backbone: checkpoint.config.backbone),
               checkpoint.sourceWidth > 0, checkpoint.sourceHeight > 0,
               !widthOverflow, !heightOverflow,
               checkpoint.outputWidth == width, checkpoint.outputHeight == height else {

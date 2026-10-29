@@ -1,0 +1,13 @@
+{
+  "filename": "HAT-S_SRx2.pth",
+  "model": "HAT-S",
+  "nativeScale": 2,
+  "officialListing": "https://github.com/XPixelGroup/HAT/blob/1638a9a822581657811867bf670717f8371fc3e5/README.md",
+  "officialConfiguration": "https://github.com/XPixelGroup/HAT/blob/1638a9a822581657811867bf670717f8371fc3e5/options/test/HAT-S_SRx2.yml",
+  "sourceURL": "https://drive.google.com/file/d/1Y7-3IgWfIAui9BMQIsFT9CzZXVMlx__e/view",
+  "downloadURL": "https://drive.usercontent.google.com/download?id=1Y7-3IgWfIAui9BMQIsFT9CzZXVMlx__e&export=download&confirm=t",
+  "retrievedAt": "2026-10-28T21:18:22.006938+00:00",
+  "bytes": 79906461,
+  "sha256": "3e249a901c2aed6b82548875e21847ef6c015a40c814237a7a0abb10c69d5ddf",
+  "validation": "Retrieval only; trained strict load/conversion/parity NOT_RUN"
+}

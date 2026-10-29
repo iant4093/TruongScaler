@@ -2,3 +2,4 @@
 torch==2.7.0
 coremltools==9.0
 numpy==2.5.4
+einops==0.8.2

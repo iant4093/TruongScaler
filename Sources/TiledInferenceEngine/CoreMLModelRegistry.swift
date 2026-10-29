@@ -8,16 +8,22 @@ public enum CoreMLModelIdentifier: String, CaseIterable, Sendable {
     case quickSRx2_192 = "QuickSRNet_Large_x2_192"
     case edsrX2_192 = "EDSR_Baseline_x2_192"
     case edsrX2_256 = "EDSR_Baseline_x2_256"
+    case hatSX2_192 = "HAT_S_x2_192"
+    case hatSX2_256 = "HAT_S_x2_256"
     public var inputTileSize: Int { rawValue.hasSuffix("_256") ? 256 : 192 }
     public var outputScale: Int { 2 }
     public var outputTileSize: Int { inputTileSize * outputScale }
     public var expectedInputShape: [Int] { [1, 3, inputTileSize, inputTileSize] }
     public var expectedOutputShape: [Int] { [1, 3, outputTileSize, outputTileSize] }
-    public static func superResolver(backbone: BackboneModelKind = .quickSRNet, tier: DeviceTier) -> Self {
+    public static func superResolver(backbone: BackboneModelKind = .quickSRNet, tier: DeviceTier) throws -> Self {
         let large = tier == .tierA_HighMemory
         switch backbone {
+        case .quickSRNet: return large ? .quickSRx2_256 : .quickSRx2_192
         case .edsrBaseline: return large ? .edsrX2_256 : .edsrX2_192
-        default: return large ? .quickSRx2_256 : .quickSRx2_192
+        case .hatSmall: return large ? .hatSX2_256 : .hatSX2_192
+        default:
+            throw ScalerError.modelInferenceFailed(modelName: backbone.rawValue, tileIndex: 0,
+                reason: "This saved model is unavailable. Its identity cannot be replaced with another model.")
         }
     }
 }
@@ -28,7 +34,7 @@ public enum CoreMLModelIdentifier: String, CaseIterable, Sendable {
 /// `.gpuAndANE` / `.cpuAndANE` / `.cpuOnly` contract is provided here, scoped to the CoreML registry,
 /// without modifying the pre-implemented core module.
 public enum ModelExecutionTier: Sendable, Equatable {
-    /// Generic foreground request (`.all`); the production model resolves this to CPU+NE.
+    /// Generic foreground request (`.all`); model and simulator restrictions apply when loading.
     case gpuAndANE
     /// Background: CoreML may only use CPU + ANE (never the GPU, whose work the OS can preempt).
     case cpuAndANE
@@ -83,7 +89,9 @@ public actor CoreMLModelRegistry {
     private var loadedModels: [CoreMLModelIdentifier: MLModel] = [:]
     private var compiledURLCache: [CoreMLModelIdentifier: URL] = [:]
     private var discoveredModelURLs: [CoreMLModelIdentifier: URL] = [:]
-    private var currentComputeUnits: MLComputeUnits
+    /// Preserve the request before per-model restrictions. Collapsing foreground `.all` here
+    /// would lose HAT-S's GPU eligibility when the same registry also serves QuickSRNet/EDSR.
+    private var requestedComputeUnits: MLComputeUnits
     private var firstPredictionRecorded: Set<CoreMLModelIdentifier> = []
     private let customSearchDirectories: [URL]
     private let searchDirectories: [URL]
@@ -100,7 +108,7 @@ public actor CoreMLModelRegistry {
         customSearchDirectories: [URL] = [],
         availabilityPolicy: ModelAvailabilityPolicy = .allowDeterministicFallback
     ) {
-        self.currentComputeUnits = Self.resolveComputeUnits(initialComputeUnits, policy: availabilityPolicy)
+        self.requestedComputeUnits = initialComputeUnits
         self.customSearchDirectories = customSearchDirectories
         self.availabilityPolicy = availabilityPolicy
         self.searchDirectories = Self.makeSearchDirectories(extra: customSearchDirectories)
@@ -114,7 +122,7 @@ public actor CoreMLModelRegistry {
         availabilityPolicy: ModelAvailabilityPolicy,
         searchDirectoriesOverride: [URL]
     ) {
-        self.currentComputeUnits = Self.resolveComputeUnits(initialComputeUnits, policy: availabilityPolicy)
+        self.requestedComputeUnits = initialComputeUnits
         self.customSearchDirectories = searchDirectoriesOverride
         self.availabilityPolicy = availabilityPolicy
         self.searchDirectories = searchDirectoriesOverride
@@ -125,38 +133,52 @@ public actor CoreMLModelRegistry {
         availabilityPolicy
     }
 
-    /// The shipped model is validated locally for CPU+NE requests and explicit CPU-only use.
-    /// GPU-enabled iOS simulator predictions returned zeros despite valid tensors/weights. Keep
-    /// production on the validated graph path on every platform; no resampler or model substitution.
-    public nonisolated func effectiveComputeUnits(for requested: MLComputeUnits) -> MLComputeUnits {
-        Self.resolveComputeUnits(requested, policy: availabilityPolicy)
+    /// QuickSRNet/EDSR retain their validated CPU+NE restriction (raw simulator GPU predictions
+    /// were invalid). HAT-S may request foreground GPU outside the simulator; Mac parity is
+    /// validated, while physical-device latency/placement remain unmeasured. Simulator MPSGraph
+    /// requests fail during model loading and are resolved to CPU+NE. A background
+    /// CPU+NE request and an explicit CPU-only request stay unchanged for every family.
+    /// The default ID preserves the existing model-agnostic API's QuickSRNet behavior.
+    public nonisolated func effectiveComputeUnits(
+        for requested: MLComputeUnits, modelID: CoreMLModelIdentifier = .quickSRx2_256
+    ) -> MLComputeUnits {
+        Self.resolveComputeUnits(requested, policy: availabilityPolicy, modelID: modelID)
     }
 
     private nonisolated static func resolveComputeUnits(
-        _ requested: MLComputeUnits, policy: ModelAvailabilityPolicy
+        _ requested: MLComputeUnits, policy: ModelAvailabilityPolicy, modelID: CoreMLModelIdentifier
     ) -> MLComputeUnits {
         guard policy == .requireProductionModels, requested != .cpuOnly else { return requested }
+        if modelID == .hatSX2_192 || modelID == .hatSX2_256 {
+            #if targetEnvironment(simulator)
+            // The simulator rejects this attention graph's GPU execution plan (-14), logging
+            // an unavailable MPSGraph backend. CPU/CPU+NE execute the same trained graph.
+            return .cpuAndNeuralEngine
+            #else
+            return requested
+            #endif
+        }
         return .cpuAndNeuralEngine
     }
 
     /// Dynamically switches compute units (e.g. to `.cpuAndNeuralEngine` when entering background).
     /// Evicts loaded `MLModel` instances so the next inference reloads with the new (safe) units.
     public func setComputeUnits(_ requestedUnits: MLComputeUnits) {
-        let units = effectiveComputeUnits(for: requestedUnits)
-        if currentComputeUnits != units {
-            let previous = currentComputeUnits
-            currentComputeUnits = units
+        if requestedComputeUnits != requestedUnits {
+            let previous = requestedComputeUnits
+            requestedComputeUnits = requestedUnits
             Diagnostics.shared.record(
                 category: .model,
                 level: .notice,
                 code: "model.compute_policy",
-                message: "requested compute policy changed",
+                message: "raw compute request changed; model restrictions apply during loading",
                 fields: [
                     "previous": Self.describeComputeUnits(previous),
-                    "requested": Self.describeComputeUnits(units)
+                    "requested": Self.describeComputeUnits(requestedUnits)
                 ]
             )
             loadedModels.removeAll()
+            firstPredictionRecorded.removeAll()
         }
     }
 
@@ -165,13 +187,23 @@ public actor CoreMLModelRegistry {
         setComputeUnits(tier.computeUnits)
     }
 
-    public func currentUnits() -> MLComputeUnits {
-        currentComputeUnits
+    public func currentUnits(for modelID: CoreMLModelIdentifier = .quickSRx2_256) -> MLComputeUnits {
+        effectiveComputeUnits(for: requestedComputeUnits, modelID: modelID)
+    }
+
+    /// Lossless request for the executor's revision-protected policy publication. This does not
+    /// assert actual operator placement or bypass per-model restrictions during loading.
+    func currentRequestedUnits() -> MLComputeUnits {
+        requestedComputeUnits
     }
 
     /// Requested CoreML policy as text. Never presented as proof of ANE/GPU placement.
-    public func currentComputeUnitsDescription() -> String {
-        Self.describeComputeUnits(currentComputeUnits)
+    public func currentComputeUnitsDescription(for modelID: CoreMLModelIdentifier = .quickSRx2_256) -> String {
+        Self.describeComputeUnits(currentUnits(for: modelID))
+    }
+
+    func loadedModelIdentifiersForTesting() -> Set<CoreMLModelIdentifier> {
+        Set(loadedModels.keys)
     }
 
     /// Releases all loaded `MLModel` instances to free model memory before Stage 4 Export.
@@ -184,7 +216,7 @@ public actor CoreMLModelRegistry {
                 message: "models unloaded",
                 fields: [
                     "modelCount": "\(loadedModels.count)",
-                    "requestedCompute": Self.describeComputeUnits(currentComputeUnits),
+                    "rawRequestedCompute": Self.describeComputeUnits(requestedComputeUnits),
                     "correlationID": correlationID?.uuidString ?? "unattributed"
                 ]
             )
@@ -292,7 +324,7 @@ public actor CoreMLModelRegistry {
                 fields: [
                     "model": modelID.rawValue,
                     "seconds": String(format: "%.3f", discoverySeconds),
-                    "requestedCompute": Self.describeComputeUnits(currentComputeUnits),
+                    "requestedCompute": currentComputeUnitsDescription(for: modelID),
                     "correlationID": correlationID?.uuidString ?? "unattributed"
                 ]
             )
@@ -303,7 +335,7 @@ public actor CoreMLModelRegistry {
             stageHandler?(.loadingModel)
             Diagnostics.shared.record(category: .model, level: .notice,
                 code: "model.load.started", message: "loading and specializing model for this device",
-                fields: ["model": modelID.rawValue, "requestedCompute": Self.describeComputeUnits(currentComputeUnits),
+                fields: ["model": modelID.rawValue, "requestedCompute": currentComputeUnitsDescription(for: modelID),
                          "correlationID": correlationID?.uuidString ?? "unattributed",
                          "availableMemoryMiB": "\(HardwareTelemetry.currentAvailableMemoryBytes() / 1_048_576)"])
         }
@@ -347,7 +379,7 @@ public actor CoreMLModelRegistry {
                     "model": modelID.rawValue,
                     "loadSeconds": String(format: "%.3f", loadSeconds),
                     "firstPredictionSeconds": String(format: "%.3f", predictionSeconds),
-                    "requestedCompute": Self.describeComputeUnits(currentComputeUnits),
+                    "requestedCompute": currentComputeUnitsDescription(for: modelID),
                     "correlationID": correlationID?.uuidString ?? "unattributed"
                 ]
             )
@@ -355,7 +387,7 @@ public actor CoreMLModelRegistry {
         return prediction
     }
 
-    private static func describeComputeUnits(_ units: MLComputeUnits) -> String {
+    nonisolated static func describeComputeUnits(_ units: MLComputeUnits) -> String {
         switch units {
         case .all: return "all (CPU+GPU+ANE requested)"
         case .cpuAndGPU: return "cpuAndGPU requested"
@@ -402,7 +434,7 @@ public actor CoreMLModelRegistry {
             return alreadyLoaded
         }
         let configuration = MLModelConfiguration()
-        configuration.computeUnits = currentComputeUnits
+        configuration.computeUnits = currentUnits(for: modelID)
         do {
             let model = try MLModel(contentsOf: compiledURL, configuration: configuration)
             loadedModels[modelID] = model

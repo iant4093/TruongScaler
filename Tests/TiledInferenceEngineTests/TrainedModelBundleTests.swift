@@ -37,6 +37,7 @@ final class TrainedModelBundleTests: XCTestCase {
         let upstreamRepo: String
         let upstreamRevision: String
         let license: String
+        let productionRawPredictionRange: [Float]?
     }
 
     private struct Inventory: Decodable {
@@ -44,6 +45,18 @@ final class TrainedModelBundleTests: XCTestCase {
         let canonicalModelCount: Int
         let models: [ModelEntry]
         let checkpoints: [String: CheckpointEntry]
+    }
+
+    private struct HATSourceManifest: Decodable {
+        struct File: Decodable {
+            let path: String
+            let sha256: String
+            let bytes: Int
+        }
+        let repository: String
+        let revision: String
+        let basicSRTag: String
+        let files: [File]
     }
 
     private static var repositoryRoot: URL {
@@ -64,11 +77,11 @@ final class TrainedModelBundleTests: XCTestCase {
 
     // MARK: - Inventory / discovery / hashes
 
-    func testCanonicalInventoryMatchesBothIdentifiersAndNotices() throws {
+    func testCanonicalInventoryMatchesAllSixIdentifiersAndNotices() throws {
         let inventory = try loadInventory()
         XCTAssertEqual(inventory.schemaVersion, 2)
-        XCTAssertEqual(inventory.canonicalModelCount, 4)
-        XCTAssertEqual(inventory.models.count, 4)
+        XCTAssertEqual(inventory.canonicalModelCount, 6)
+        XCTAssertEqual(inventory.models.count, 6)
         XCTAssertEqual(
             Set(inventory.models.map(\.identifier)),
             Set(CoreMLModelIdentifier.allCases.map(\.rawValue))
@@ -86,6 +99,7 @@ final class TrainedModelBundleTests: XCTestCase {
             XCTAssertEqual(entry.inputDataType, "Float16")
             XCTAssertEqual(entry.outputDataType, "Float16")
             XCTAssertFalse(entry.computePrecision.isEmpty)
+            XCTAssertEqual(entry.computePrecision, entry.identifier.hasPrefix("QuickSRNet_") ? "FLOAT16" : "FLOAT32")
             XCTAssertEqual(entry.checkpointSHA256.count, 64)
             XCTAssertEqual(entry.assetDirectorySHA256.count, 64)
             XCTAssertFalse(entry.upstreamRepo.isEmpty)
@@ -97,7 +111,7 @@ final class TrainedModelBundleTests: XCTestCase {
             XCTAssertEqual(inventory.checkpoints[entry.checkpoint]?.revision, entry.upstreamRevision)
         }
 
-        for notice in ["QuickSRNet-LICENSE.txt", "EDSR-LICENSE.txt"] {
+        for notice in ["QuickSRNet-LICENSE.txt", "EDSR-LICENSE.txt", "HAT-S-LICENSE.txt", "HAT-S-BasicSR-LICENSE.txt", "HAT-S-timm-LICENSE.txt"] {
             let url = Self.modelsDirectory.appendingPathComponent("Notices/\(notice)")
             XCTAssertTrue(FileManager.default.fileExists(atPath: url.path), "Missing notice \(notice)")
             XCTAssertGreaterThan((try? Data(contentsOf: url).count) ?? 0, 100)
@@ -108,7 +122,51 @@ final class TrainedModelBundleTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: readmeURL.path))
     }
 
-    func testBothAssetDirectoryDigestsAndWeightsMatchInventory() throws {
+    func testHATPinsTheOfficialCheckpointAndCompleteArchitectureSupportManifest() throws {
+        let inventory = try loadInventory()
+        let checkpoint = try XCTUnwrap(inventory.checkpoints["hat-s-2x"])
+        let expectedHash = "3e249a901c2aed6b82548875e21847ef6c015a40c814237a7a0abb10c69d5ddf"
+        let revision = "1638a9a822581657811867bf670717f8371fc3e5"
+        XCTAssertEqual(checkpoint.file, "HAT-S_SRx2.pth")
+        XCTAssertEqual(checkpoint.sha256, expectedHash)
+        XCTAssertEqual(checkpoint.repo, "https://github.com/XPixelGroup/HAT")
+        XCTAssertEqual(checkpoint.revision, revision)
+        let checkpointURL = Self.repositoryRoot.appendingPathComponent("ModelConversionTools/checkpoints/" + checkpoint.file)
+        XCTAssertEqual(try Self.fileDigest(checkpointURL), expectedHash)
+        let hatRows = inventory.models.filter { $0.identifier.hasPrefix("HAT_S_") }
+        XCTAssertEqual(Set(hatRows.map(\.identifier)), ["HAT_S_x2_192", "HAT_S_x2_256"])
+        for row in hatRows {
+            XCTAssertEqual(row.computePrecision, "FLOAT32")
+            XCTAssertEqual(row.productionRawPredictionRange, [-0.25, 1.25])
+        }
+
+        let manifestURL = Self.modelsDirectory.appendingPathComponent("Provenance/hat-source-manifest.json")
+        let vendor = Self.repositoryRoot.appendingPathComponent("ModelConversionTools/vendor/hat", isDirectory: true)
+        let manifestBytes = try Data(contentsOf: manifestURL)
+        XCTAssertEqual(manifestBytes, try Data(contentsOf: vendor.appendingPathComponent("source-manifest.json")))
+        let manifest = try JSONDecoder().decode(HATSourceManifest.self, from: manifestBytes)
+        XCTAssertEqual(manifest.repository, "https://github.com/XPixelGroup/HAT")
+        XCTAssertEqual(manifest.revision, revision)
+        XCTAssertEqual(manifest.basicSRTag, "v1.3.4.9")
+        let expectedFiles = ["HAT-S_SRx2.yml", "LICENSE", "hat_arch.py", "basicsr/LICENSE",
+            "basicsr/LICENSE_pytorch-image-models", "basicsr/arch_util.py", "basicsr/registry.py"]
+        XCTAssertEqual(Set(manifest.files.map(\.path)), Set(expectedFiles.map { "ModelConversionTools/vendor/hat/" + $0 }))
+        XCTAssertEqual(manifest.files.count, expectedFiles.count)
+        for file in manifest.files {
+            let url = Self.repositoryRoot.appendingPathComponent(file.path).resolvingSymlinksInPath()
+            XCTAssertTrue(url.path.hasPrefix(vendor.resolvingSymlinksInPath().path + "/"))
+            XCTAssertEqual(try Self.fileDigest(url), file.sha256, file.path)
+            let size = try FileManager.default.attributesOfItem(atPath: url.path)[.size] as? NSNumber
+            XCTAssertEqual(size?.intValue, file.bytes, file.path)
+        }
+        for (notice, source) in [("HAT-S-LICENSE.txt", "LICENSE"), ("HAT-S-BasicSR-LICENSE.txt", "basicsr/LICENSE"),
+                                 ("HAT-S-timm-LICENSE.txt", "basicsr/LICENSE_pytorch-image-models")] {
+            XCTAssertEqual(try Self.fileDigest(Self.modelsDirectory.appendingPathComponent("Notices/" + notice)),
+                           try Self.fileDigest(vendor.appendingPathComponent(source)))
+        }
+    }
+
+    func testAllAssetDirectoryDigestsAndWeightsMatchInventory() throws {
         let inventory = try loadInventory()
         for entry in inventory.models {
             let assetURL = Self.modelsDirectory.appendingPathComponent(entry.asset, isDirectory: true)
@@ -127,7 +185,7 @@ final class TrainedModelBundleTests: XCTestCase {
 
     // MARK: - Exact loaded model contract
 
-    func testBothProductionModelsHaveExactFloat16TensorContract() throws {
+    func testAllProductionModelsHaveExactFloat16TensorContract() throws {
         let inventory = try loadInventory()
         for entry in inventory.models {
             let assetURL = Self.modelsDirectory.appendingPathComponent(entry.asset, isDirectory: true)
@@ -156,7 +214,7 @@ final class TrainedModelBundleTests: XCTestCase {
 
     // MARK: - Real model-required predictions
 
-    func testBothProductionModelsPerformNonconstantRealPrediction() async throws {
+    func testAllProductionModelsPerformNonconstantRealPrediction() async throws {
         let inventory = try loadInventory()
         let registry = CoreMLModelRegistry(
             initialComputeUnits: .cpuAndGPU,
@@ -164,7 +222,7 @@ final class TrainedModelBundleTests: XCTestCase {
             availabilityPolicy: .requireProductionModels
         )
         let discovered = await registry.discoveredProductionModelURLs()
-        XCTAssertEqual(discovered.count, 4, "Production discovery did not resolve all trained assets")
+        XCTAssertEqual(discovered.count, 6, "Production discovery did not resolve all trained assets")
 
         for entry in inventory.models {
             guard let identifier = CoreMLModelIdentifier(rawValue: entry.identifier) else {

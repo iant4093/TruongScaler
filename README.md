@@ -20,11 +20,13 @@ Native 2× iPhone photo enlargement with local Core ML models, HDR-aware exports
 
 ---
 
-TruongScaler enlarges photos on device using **QuickSRNet (Fast)** by default or **EDSR (Better)**. Every new job uses native **2×**, with denoise off. Choose an input folder and a separate output folder in Files; saved results retain their model, processing history and frozen original for before/after comparison when reopened. Inference uses bundled trained models and Apple frameworks, without a remote processing service.
+TruongScaler's model choices on this feature branch are **QuickSRNet (Fast)** by default, **EDSR (Balanced)** and **HAT-S (Best)**. Every new job uses native **2×**, with denoise off. Choose an input folder and a separate output folder in Files; saved results retain their model, processing history and frozen original for before/after comparison when reopened. Inference uses trained Core ML models and Apple frameworks, without a remote processing service.
+
+Build 1008 remains the separate validated two-model release baseline. This branch integrates **three choices and six compiled variants**, with 192 and 256 input shapes for each model. Its HAT-S reference, runtime and application checks are recorded separately in [validation and limits](docs/VALIDATION.md). The tier names describe the intended time/detail tradeoff; HAT-S phone speed, image quality and accelerator placement have not been measured.
 
 ## Screenshots
 
-Actual production SwiftUI/UIKit screens captured in an iOS Simulator at 1206 × 2622, using temporary libraries and CC0 photo fixtures. The viewer shows a saved native 2× QuickSRNet result reopened through its portable record. Screens illustrate the interface; they do not establish physical-phone performance or image-quality superiority. Photography credits, source links and capture details are in [screenshot provenance](docs/screenshots/provenance.json).
+Current screenshots show actual production SwiftUI/UIKit screens captured in an iOS Simulator at 1206 × 2622, using temporary libraries and CC0 photo fixtures. The viewer shows a saved native 2× HAT-S result reopened through its portable record; settings show HAT-S selected for the next job. Screens illustrate the interface; they do not establish physical-phone performance or image-quality superiority. Photography credits, source links and capture details are in [screenshot provenance](docs/screenshots/provenance.json).
 
 <table>
   <tr>
@@ -33,7 +35,7 @@ Actual production SwiftUI/UIKit screens captured in an iOS Simulator at 1206 × 
       <p align="center"><sub><b>Input library</b> · browse photos from a chosen Files folder</sub></p>
     </td>
     <td width="50%" valign="top">
-      <img src="docs/screenshots/processed-viewer.png" width="100%" alt="TruongScaler processed photo viewer with a before/after comparison of a saved QuickSRNet enlargement">
+      <img src="docs/screenshots/processed-viewer.png" width="100%" alt="TruongScaler processed photo viewer with a before/after comparison of a saved HAT-S enlargement">
       <p align="center"><sub><b>Before and after</b> · compare the saved original with its 2× result</sub></p>
     </td>
   </tr>
@@ -43,7 +45,7 @@ Actual production SwiftUI/UIKit screens captured in an iOS Simulator at 1206 × 
       <p align="center"><sub><b>Output library</b> · reopen, share and manage saved results</sub></p>
     </td>
     <td width="50%" valign="top">
-      <img src="docs/screenshots/model-settings.png" width="100%" alt="TruongScaler processing settings with QuickSRNet and EDSR model choices and export controls">
+      <img src="docs/screenshots/model-settings.png" width="100%" alt="TruongScaler processing settings with HAT-S selected, its processing hint and export controls">
       <p align="center"><sub><b>Processing settings</b> · choose the model, export format and grain retention</sub></p>
     </td>
   </tr>
@@ -53,8 +55,8 @@ Actual production SwiftUI/UIKit screens captured in an iOS Simulator at 1206 × 
 
 **Processing**
 
-- Native 2× super-resolution with QuickSRNet-Large or EDSR-baseline, each supporting the 192 and 256 input memory tiers
-- Local Core ML inference with required trained weights, pinned provenance, SHA-256 verification and BSD/MIT model notices
+- Native 2× super-resolution with QuickSRNet-Large, EDSR-baseline and HAT-S, with 192 and 256 input memory tiers for each; six variants are bundled
+- Local Core ML inference with required trained weights, pinned provenance, SHA-256 verification and preserved BSD/MIT/Apache-2.0 model notices
 - Recursive input folders containing supported photos and RAWs, including loose files outside a camera-app library
 - Disk-backed canvases, overlapping tiles and durable checkpoint/journal recovery for interrupted work
 - Stop, resumable jobs and batch progress that includes saving each photo
@@ -87,7 +89,7 @@ Use retained folders outside the app's own container if you want them to survive
 
 | Area | Technologies |
 |---|---|
-| Inference | Core ML, bundled QuickSRNet-Large and EDSR-baseline models |
+| Inference | Core ML; QuickSRNet-Large, EDSR-baseline and HAT-S models |
 | Interface | SwiftUI, UIKit, Liquid Glass, tiled image viewing |
 | Imaging | Metal, Core Image, Image I/O, Core Graphics, linear Display P3 |
 | Storage and export | Security-scoped Files access, coordinated operations, POSIX mmap, durable journals, streamed C++ Linear DNG writer |

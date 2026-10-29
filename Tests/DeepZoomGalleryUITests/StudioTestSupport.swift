@@ -652,7 +652,7 @@ final class FakePipelineExecutor: StudioPipelineExecuting, @unchecked Sendable {
         let checkpoint = JobCheckpointState(
             jobID: config.id,
             config: config,
-            tileConfig: TileConfiguration(tier: .tierA_HighMemory),
+            tileConfig: TileConfiguration(tier: .tierA_HighMemory, backbone: config.backbone),
             sourceWidth: sourceWidth,
             sourceHeight: sourceHeight,
             paddedSourceWidth: sourceWidth,
@@ -938,7 +938,7 @@ enum StudioTestArtifacts {
         let checkpoint = JobCheckpointState(
             jobID: config.id,
             config: config,
-            tileConfig: TileConfiguration(tier: .tierA_HighMemory),
+            tileConfig: TileConfiguration(tier: .tierA_HighMemory, backbone: config.backbone),
             sourceWidth: sourceWidth,
             sourceHeight: sourceHeight,
             paddedSourceWidth: sourceWidth,

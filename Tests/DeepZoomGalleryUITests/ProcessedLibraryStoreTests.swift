@@ -60,7 +60,7 @@ final class ProcessedLibraryStoreTests: XCTestCase {
         XCTAssertNotNil(opened.originalURL)
         XCTAssertNil(opened.comparisonUnavailableReason)
         XCTAssertEqual(try Data(contentsOf: opened.outputURL), try Data(contentsOf: output))
-        XCTAssertEqual(record.modelLabel, "EDSR (Better)")
+        XCTAssertEqual(record.modelLabel, "EDSR (Balanced)")
         let repeated = try await restarted.publish(exportedURL: output, original: first, draft: specification, under: root)
         XCTAssertEqual(repeated, record, "Retrying one completed job must not create another result")
         do {

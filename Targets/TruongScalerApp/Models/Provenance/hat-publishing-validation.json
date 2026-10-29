@@ -1,0 +1,64 @@
+{
+  "actualANEPlacement": "NOT_MEASURED",
+  "gates": [
+    {
+      "compiledAssetDirectorySHA256": "c01486a8102968a79969f7ee2898ae0a8bb9fbcc20894a00aa33894923b5883f",
+      "computeRequested": "cpuOnly",
+      "maximumAbsoluteError": 0.0009765625,
+      "minimumPSNR": 73.11684643961217,
+      "model": "HAT_S_x2_192"
+    },
+    {
+      "compiledAssetDirectorySHA256": "c01486a8102968a79969f7ee2898ae0a8bb9fbcc20894a00aa33894923b5883f",
+      "computeRequested": "cpuAndGPU",
+      "maximumAbsoluteError": 0.000978231430053711,
+      "minimumPSNR": 73.11683792193844,
+      "model": "HAT_S_x2_192"
+    },
+    {
+      "compiledAssetDirectorySHA256": "c01486a8102968a79969f7ee2898ae0a8bb9fbcc20894a00aa33894923b5883f",
+      "computeRequested": "cpuAndNeuralEngine",
+      "maximumAbsoluteError": 0.0009765625,
+      "minimumPSNR": 73.11684643961217,
+      "model": "HAT_S_x2_192"
+    },
+    {
+      "compiledAssetDirectorySHA256": "c01486a8102968a79969f7ee2898ae0a8bb9fbcc20894a00aa33894923b5883f",
+      "computeRequested": "all",
+      "maximumAbsoluteError": 0.000978231430053711,
+      "minimumPSNR": 73.11683792193844,
+      "model": "HAT_S_x2_192"
+    },
+    {
+      "compiledAssetDirectorySHA256": "f934ee6d2d6f29b38cd8054d6a326db546c98f6a659e596e28a6b30ff73e1974",
+      "computeRequested": "cpuOnly",
+      "maximumAbsoluteError": 0.000978231430053711,
+      "minimumPSNR": 73.17031464946007,
+      "model": "HAT_S_x2_256"
+    },
+    {
+      "compiledAssetDirectorySHA256": "f934ee6d2d6f29b38cd8054d6a326db546c98f6a659e596e28a6b30ff73e1974",
+      "computeRequested": "cpuAndGPU",
+      "maximumAbsoluteError": 0.0009777545928955078,
+      "minimumPSNR": 73.17028795796665,
+      "model": "HAT_S_x2_256"
+    },
+    {
+      "compiledAssetDirectorySHA256": "f934ee6d2d6f29b38cd8054d6a326db546c98f6a659e596e28a6b30ff73e1974",
+      "computeRequested": "cpuAndNeuralEngine",
+      "maximumAbsoluteError": 0.000978231430053711,
+      "minimumPSNR": 73.17031464946007,
+      "model": "HAT_S_x2_256"
+    },
+    {
+      "compiledAssetDirectorySHA256": "f934ee6d2d6f29b38cd8054d6a326db546c98f6a659e596e28a6b30ff73e1974",
+      "computeRequested": "all",
+      "maximumAbsoluteError": 0.0009777545928955078,
+      "minimumPSNR": 73.17028795796665,
+      "model": "HAT_S_x2_256"
+    }
+  ],
+  "passed": true,
+  "phonePerformanceAndQuality": "NOT_MEASURED",
+  "scope": "Mac conversion parity only"
+}

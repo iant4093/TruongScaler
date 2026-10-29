@@ -1,0 +1,88 @@
+[
+  {
+    "metadataOutputVersion" : "3.0",
+    "shortDescription" : "Official trained HAT-S native2x 192; raw RGB transfer-domain output.",
+    "outputSchema" : [
+      {
+        "hasShapeFlexibility" : "0",
+        "isOptional" : "0",
+        "dataType" : "Float16",
+        "formattedType" : "MultiArray (Float16 1 × 3 × 384 × 384)",
+        "shortDescription" : "",
+        "shape" : "[1, 3, 384, 384]",
+        "name" : "output_tile",
+        "type" : "MultiArray"
+      }
+    ],
+    "storagePrecision" : "Mixed (Float32, Int32, Palettized (1 bits), UInt1)",
+    "modelParameters" : [
+
+    ],
+    "author" : "XPixelGroup HAT authors; Core ML conversion by TruongScaler",
+    "specificationVersion" : 9,
+    "license" : "Apache-2.0; see bundled upstream HAT\/BasicSR notices.",
+    "mlProgramOperationTypeHistogram" : {
+      "Ios18.softmax" : 42,
+      "Ios18.mul" : 114,
+      "Ios18.matmul" : 84,
+      "Ios16.reduceMean" : 36,
+      "Ios18.sigmoid" : 36,
+      "Ios18.gather" : 78,
+      "Ios18.add" : 187,
+      "Ios18.layerNorm" : 86,
+      "Ios18.reshape" : 422,
+      "Pad" : 6,
+      "Ios18.constexprLutToDense" : 1,
+      "Ios18.leakyRelu" : 1,
+      "Ios18.linear" : 168,
+      "Ios18.conv" : 155,
+      "Ios18.relu" : 36,
+      "Ios18.sub" : 1,
+      "Ios18.gelu" : 78,
+      "Ios18.concat" : 6,
+      "Ios18.transpose" : 284,
+      "Ios18.cast" : 2,
+      "PixelShuffle" : 1,
+      "Ios18.sliceByIndex" : 138
+    },
+    "computePrecision" : "Mixed (Float16, Float32, Int32)",
+    "stateSchema" : [
+
+    ],
+    "isUpdatable" : "0",
+    "availability" : {
+      "macOS" : "15.0",
+      "tvOS" : "18.0",
+      "visionOS" : "2.0",
+      "watchOS" : "11.0",
+      "iOS" : "18.0",
+      "macCatalyst" : "18.0"
+    },
+    "modelType" : {
+      "name" : "MLModelType_mlProgram"
+    },
+    "inputSchema" : [
+      {
+        "hasShapeFlexibility" : "0",
+        "isOptional" : "0",
+        "dataType" : "Float16",
+        "formattedType" : "MultiArray (Float16 1 × 3 × 192 × 192)",
+        "shortDescription" : "",
+        "shape" : "[1, 3, 192, 192]",
+        "name" : "input_tile",
+        "type" : "MultiArray"
+      }
+    ],
+    "userDefinedMetadata" : {
+      "com.github.apple.coremltools.source" : "torch==2.7.0",
+      "com.github.apple.coremltools.version" : "9.0",
+      "com.github.apple.coremltools.conversion_date" : "2026-10-28",
+      "checkpointSHA256" : "3e249a901c2aed6b82548875e21847ef6c015a40c814237a7a0abb10c69d5ddf",
+      "com.github.apple.coremltools.source_dialect" : "TorchScript",
+      "officialRevision" : "1638a9a822581657811867bf670717f8371fc3e5",
+      "arithmeticPrecision" : "fp32"
+    },
+    "generatedClassName" : "HAT_S_x2_192",
+    "method" : "predict"
+  }
+]

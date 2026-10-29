@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "scope": "Actual iPhone 17 / iOS 27 Simulator; independent official FP32 sampled fixtures",
+  "models": {
+    "HAT_S_x2_192": "c01486a8102968a79969f7ee2898ae0a8bb9fbcc20894a00aa33894923b5883f",
+    "HAT_S_x2_256": "f934ee6d2d6f29b38cd8054d6a326db546c98f6a659e596e28a6b30ff73e1974"
+  },
+  "requests": {
+    "cpuOnly": {
+      "status": "PASS",
+      "modelRequests": 2,
+      "referenceCases": 6,
+      "samplesPerCase": 1024,
+      "minimumPSNRGate": 50,
+      "maximumAbsoluteErrorExclusive": 0.02,
+      "completeUninterruptedTelemetryRows": 5
+    },
+    "cpuAndNeuralEngine": {
+      "status": "PASS",
+      "modelRequests": 2,
+      "referenceCases": 6,
+      "samplesPerCase": 1024,
+      "minimumPSNRGate": 50,
+      "maximumAbsoluteErrorExclusive": 0.02,
+      "completeUninterruptedTelemetryRows": 6
+    },
+    "cpuAndGPU": {
+      "status": "NOT_SUPPORTED_ON_EXERCISED_SIMULATOR",
+      "modelRequests": 2,
+      "errorDomain": "com.apple.CoreML",
+      "executionPlanError": -14,
+      "runtimeDiagnostic": "MpsGraph backend validation on incompatible OS (11)",
+      "countsAsGPUPredictionParityPass": false
+    },
+    "all": {
+      "status": "NOT_SUPPORTED_ON_EXERCISED_SIMULATOR",
+      "modelRequests": 2,
+      "errorDomain": "com.apple.CoreML",
+      "executionPlanError": -14,
+      "runtimeDiagnostic": "MpsGraph backend validation on incompatible OS (11)",
+      "countsAsGPUPredictionParityPass": false
+    }
+  },
+  "productionSimulatorRouting": "cpuAndNeuralEngine unless explicit cpuOnly",
+  "phoneGPUBehaviorAndLatency": "NOT_MEASURED",
+  "actualANEPlacement": "NOT_MEASURED",
+  "regression": "AdditionalModelReferenceTests.testHATRawPredictionsMatchOfficialReferenceOnEverySupportedComputeRequest"
+}

@@ -27,12 +27,13 @@
       "url" : "https:\/\/commons.wikimedia.org\/wiki\/File:Landscape_South_of_Urbino,_Taken_from_Parco_della_Resistenza_at_Late_Sunset.jpg"
     }
   ],
-  "processing" : "Real StudioViewModel production initializer (.requireProductionModels), QuickSRNet-Large native 2×, denoise off; two 512×384 inputs saved as 1024×768 TIFF results and reopened through portable records",
+  "processing" : "Real StudioViewModel production initializer (.requireProductionModels), HAT-S flower and QuickSRNet-Large landscape, native 2× and denoise off; two 512×384 inputs saved as 1024×768 TIFF results; the HAT-S comparison is reopened through its portable record",
   "qualityScope" : "Screenshots illustrate the interface; they do not establish physical-phone performance or image-quality superiority",
   "screenshots" : [
     "input-library.png",
     "processed-viewer.png",
     "output-library.png",
     "model-settings.png"
-  ]
+  ],
+  "settings" : "Current three-model production form with HAT-S (Best) selected for the next job"
 }

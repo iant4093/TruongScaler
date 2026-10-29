@@ -1,0 +1,42 @@
+{
+  "repository": "https://github.com/XPixelGroup/HAT",
+  "revision": "1638a9a822581657811867bf670717f8371fc3e5",
+  "basicSRTag": "v1.3.4.9",
+  "files": [
+    {
+      "path": "ModelConversionTools/vendor/hat/HAT-S_SRx2.yml",
+      "sha256": "4b6505d46ad7e864ee0caf6ea33933ce103e74973e8a69951235acee3bf691dd",
+      "bytes": 1870
+    },
+    {
+      "path": "ModelConversionTools/vendor/hat/LICENSE",
+      "sha256": "a91d57ebad8955a1757be7891ca2da8e07493e662f0e34e1e1926571e05f37fc",
+      "bytes": 11342
+    },
+    {
+      "path": "ModelConversionTools/vendor/hat/basicsr/LICENSE",
+      "sha256": "19c7f4446a07c522fbbd1f8e190971e0349dff82da02b8c3a930a1cf3be95668",
+      "bytes": 11350
+    },
+    {
+      "path": "ModelConversionTools/vendor/hat/basicsr/LICENSE_pytorch-image-models",
+      "sha256": "71b111620fa32c17a80ccd6db2da759d31a591e497d8b5f382174f59d1b59d49",
+      "bytes": 11343
+    },
+    {
+      "path": "ModelConversionTools/vendor/hat/basicsr/arch_util.py",
+      "sha256": "e5845204e7b0b4fab175b65c7ac472b31b8242b556abccb41223eff9a79504f0",
+      "bytes": 11435
+    },
+    {
+      "path": "ModelConversionTools/vendor/hat/basicsr/registry.py",
+      "sha256": "21c23bd3bf727eb2decd99035120fc47316db92486d73116cca18e9fa8b6c854",
+      "bytes": 2185
+    },
+    {
+      "path": "ModelConversionTools/vendor/hat/hat_arch.py",
+      "sha256": "81d8cecf491975246c9ebb20480898c656f59de020f38b05daa68741e426117f",
+      "bytes": 38772
+    }
+  ]
+}

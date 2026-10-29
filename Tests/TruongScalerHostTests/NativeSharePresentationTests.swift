@@ -45,7 +45,7 @@ final class NativeSharePresentationTests: XCTestCase {
             try FileManager.default.copyItem(at: fixtures.appendingPathComponent(sample.fixture), to: destination)
             photos.append(destination)
         }
-        // The public production initializer always requires the four shipped trained variants.
+        // The public production initializer requires the shipped trained-model bundle.
         // Do not replace this with the deterministic test fallback: these are README photographs.
         let vm = StudioViewModel(workingDirectory: directory.appendingPathComponent("work"), defaults: defaults)
         await vm.setOutputFolder(url: output)
@@ -95,11 +95,12 @@ final class NativeSharePresentationTests: XCTestCase {
         try capture("input-library")
 
         vm.exportFormat = .tiff16BitLZW
-        vm.selectedModel = .quickSRNet
-        for photo in photos {
+        for (index, photo) in photos.enumerated() {
+            let model: BackboneModelKind = index == 0 ? .hatSmall : .quickSRNet
+            vm.selectedModel = model
             await vm.ingestFile(at: photo)
             vm.startProcessing()
-            let deadline = ContinuousClock.now + .seconds(120)
+            let deadline = ContinuousClock.now + .seconds(model == .hatSmall ? 300 : 120)
             while vm.isProcessing, .now < deadline { try await Task.sleep(for: .milliseconds(30)) }
             XCTAssertFalse(vm.isProcessing, "The required-model screenshot job exceeded its deadline")
             if vm.isProcessing {
@@ -109,7 +110,7 @@ final class NativeSharePresentationTests: XCTestCase {
             }
             XCTAssertEqual(vm.currentStage, .readyForInspection, vm.errorMessage ?? "")
             XCTAssertTrue(vm.isProcessedPhoto)
-            XCTAssertEqual(vm.completedArtifacts?.checkpoint.config.backbone, .quickSRNet)
+            XCTAssertEqual(vm.completedArtifacts?.checkpoint.config.backbone, model)
             XCTAssertEqual(vm.completedArtifacts?.checkpoint.outputWidth, 1024)
             XCTAssertEqual(vm.completedArtifacts?.checkpoint.outputHeight, 768)
             guard vm.currentStage == .readyForInspection else { throw CocoaError(.featureUnsupported) }
@@ -120,6 +121,7 @@ final class NativeSharePresentationTests: XCTestCase {
         // holding an unpersisted in-memory canvas only for a screenshot.
         let records = try await ProcessedLibraryStore().records(under: output)
         let flowerRecord = try XCTUnwrap(records.first { $0.original.filename == samples[0].name })
+        XCTAssertEqual(flowerRecord.modelRawValue, BackboneModelKind.hatSmall.rawValue)
         let flowerURL = output.appendingPathComponent(flowerRecord.outputRelativePath)
         let flowerResult = try XCTUnwrap(vm.outputDaySections.flatMap(\.items).first { $0.fileURL == flowerURL })
         vm.selectedCollection = .output
@@ -139,6 +141,7 @@ final class NativeSharePresentationTests: XCTestCase {
         vm.selectedCollection = .input
         await vm.ingestFile(at: photos[0])
         XCTAssertEqual(vm.metadata?.originalWidth, 512)
+        vm.selectedModel = .hatSmall
         let options = UIHostingController(rootView: UpscaleOptionsFormSheet(viewModel: vm, onPickFileOrFolder: {})
             .preferredColorScheme(.dark))
         options.modalPresentationStyle = .pageSheet
@@ -164,7 +167,8 @@ final class NativeSharePresentationTests: XCTestCase {
         })
         let manifest: [String: Any] = [
             "capture": "Actual production SwiftUI/UIKit screens in an iOS simulator, 402×874 points at 3×; private temporary libraries",
-            "processing": "Real StudioViewModel production initializer (.requireProductionModels), QuickSRNet-Large native 2×, denoise off; two 512×384 inputs saved as 1024×768 TIFF results and reopened through portable records",
+            "processing": "Real StudioViewModel production initializer (.requireProductionModels), HAT-S flower and QuickSRNet-Large landscape, native 2× and denoise off; two 512×384 inputs saved as 1024×768 TIFF results; the HAT-S comparison is reopened through its portable record",
+            "settings": "Current three-model production form with HAT-S (Best) selected for the next job",
             "qualityScope": "Screenshots illustrate the interface; they do not establish physical-phone performance or image-quality superiority",
             "screenshots": capturedNames,
             "fixtureSHA256": sourceHashes,

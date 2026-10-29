@@ -21,15 +21,28 @@ public struct BackboneModelKind: RawRepresentable, Codable, CaseIterable, Sendab
     public init(rawValue: String) { self.rawValue = rawValue }
     public static let quickSRNet = Self(rawValue: "QuickSRNet-Large")
     public static let edsrBaseline = Self(rawValue: "EDSR-baseline")
+    public static let hatSmall = Self(rawValue: "HAT_S")
     public static let unavailable = Self(rawValue: "unavailable-model")
-    public static var allCases: [Self] { [.quickSRNet, .edsrBaseline] }
+    public static var allCases: [Self] { [.quickSRNet, .edsrBaseline, .hatSmall] }
     public var id: String { rawValue }
     public var isSupported: Bool { Self.allCases.contains(self) }
     public var displayName: String {
         switch self {
         case .quickSRNet: return "QuickSRNet (Fast)"
-        case .edsrBaseline: return "EDSR (Better)"
+        case .edsrBaseline: return "EDSR (Balanced)"
+        case .hatSmall: return "HAT-S (Best)"
         default: return "Previous model"
+        }
+    }
+
+    /// Describes the intended time/detail tradeoff, without asserting measured phone speed,
+    /// accelerator placement or universal image-quality superiority.
+    public var processingHint: String {
+        switch self {
+        case .quickSRNet: return "The fast option for everyday enlargement."
+        case .edsrBaseline: return "Balances processing time and detail."
+        case .hatSmall: return "A larger, detail-focused model. Expect slower processing."
+        default: return "This saved photo retains its original model identity."
         }
     }
 
@@ -37,7 +50,7 @@ public struct BackboneModelKind: RawRepresentable, Codable, CaseIterable, Sendab
     /// bounded edge ringing before display-domain restoration, but refuse large excursions and
     /// non-finite samples. Adversarial checker/noise cases remain errors, never silent fallbacks.
     public var predictionSampleRange: ClosedRange<Float> {
-        self == .edsrBaseline ? -0.25...1.25 : -0.02...1.02
+        self == .edsrBaseline || self == .hatSmall ? -0.25...1.25 : -0.02...1.02
     }
     public init(from decoder: Decoder) throws { rawValue = try decoder.singleValueContainer().decode(String.self) }
     public func encode(to encoder: Encoder) throws {

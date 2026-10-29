@@ -188,6 +188,45 @@ final class ProgressEdgeCaseTests: XCTestCase {
         XCTAssertTrue(reported.contains("cpuOnly"), "A stale entry policy read must not overwrite the newer foreground/background request")
     }
 
+    func testHATEntryReadCannotRestoreForegroundGPUAfterANewerBackgroundRequest() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("HATPolicyRace-\(UUID())")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let registry = CoreMLModelRegistry(initialComputeUnits: .all, availabilityPolicy: .requireProductionModels)
+        let executor = TiledPipelineExecutor(workingDirectory: directory, modelRegistry: registry,
+            checkpointStore: JobCheckpointStore(directory: directory), colorProcessor: MetalColorProcessor(preferMetal: false))
+        let config = UpscaleJobConfig(sourceImageURL: directory.appendingPathComponent("missing.png"), backbone: .hatSmall)
+        let gate = ReviewPolicyGate()
+        let holder = Task { await registry.reviewHoldPolicyActor(gate) }
+        await gate.entered.wait()
+        defer { gate.release.signal() }
+        let entered = ReviewSignal()
+        let execution = Task {
+            entered.signal()
+            do { _ = try await executor.executeOrResumeJob(config: config) } catch {}
+        }
+        await entered.wait()
+        await executor.reviewActorBarrier()
+        try await Task.sleep(for: .milliseconds(50))
+        let transition = Task { await executor.setBackgroundExecutionMode(true) }
+        let deadline = ContinuousClock.now + .seconds(5)
+        var pendingDescription = await executor.currentRequestedComputeDescriptionForTesting(modelID: .hatSX2_192)
+        while !pendingDescription.contains("cpuAndNeuralEngine"), ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(5))
+            pendingDescription = await executor.currentRequestedComputeDescriptionForTesting(modelID: .hatSX2_192)
+        }
+        XCTAssertTrue(pendingDescription.contains("cpuAndNeuralEngine"), "Publish the safe next-tile request before a busy registry drains")
+        gate.release.signal()
+        await holder.value
+        await transition.value
+        await execution.value
+        let raw = await registry.currentRequestedUnits()
+        let effective = await registry.currentUnits(for: .hatSX2_192)
+        let finalDescription = await executor.currentRequestedComputeDescriptionForTesting(modelID: .hatSX2_192)
+        XCTAssertEqual(raw, .cpuAndNeuralEngine)
+        XCTAssertEqual(effective, .cpuAndNeuralEngine)
+        XCTAssertTrue(finalDescription.contains("cpuAndNeuralEngine"), "The stale foreground entry read cannot overwrite a newer background request")
+    }
 }
 
 private final class ReviewSignal: @unchecked Sendable {

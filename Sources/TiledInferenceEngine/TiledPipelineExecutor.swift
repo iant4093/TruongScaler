@@ -197,15 +197,22 @@ public struct ExecutionPauseOwner: Sendable, Hashable {
 final class RequestedComputePolicy: @unchecked Sendable {
     private let lock = NSLock()
     private var value: String
+    private var rawUnits: MLComputeUnits?
     private var revision: UInt64 = 0
 
     init(_ value: String) {
         self.value = value
     }
 
-    var description: String {
-        lock.lock(); defer { lock.unlock() }
-        return value
+    /// Resolve a shared mode request against this event's immutable model identity. A changed
+    /// next-job picker or another model's restriction may never relabel an in-flight event.
+    func description(for modelID: CoreMLModelIdentifier, registry: CoreMLModelRegistry) -> String {
+        lock.lock()
+        let request = rawUnits
+        let fallback = value
+        lock.unlock()
+        guard let request else { return fallback }
+        return CoreMLModelRegistry.describeComputeUnits(registry.effectiveComputeUnits(for: request, modelID: modelID))
     }
 
     var currentRevision: UInt64 {
@@ -216,20 +223,22 @@ final class RequestedComputePolicy: @unchecked Sendable {
     /// Records a newer explicit execution-tier/background request. Returns its revision so an
     /// older suspended entry-policy read can detect that it no longer owns publication.
     @discardableResult
-    func setFromRequest(_ newValue: String) -> UInt64 {
+    func setFromRequest(_ newValue: String, rawUnits: MLComputeUnits) -> UInt64 {
         lock.lock()
         revision &+= 1
         value = newValue
+        self.rawUnits = rawUnits
         let result = revision
         lock.unlock()
         return result
     }
 
     /// Publishes a value only when no newer request has occurred since `expectedRevision`.
-    func publishIfRevisionUnchanged(_ newValue: String, expectedRevision: UInt64) {
+    func publishIfRevisionUnchanged(_ newValue: String, rawUnits: MLComputeUnits, expectedRevision: UInt64) {
         lock.lock()
         if revision == expectedRevision {
             value = newValue
+            self.rawUnits = rawUnits
         }
         lock.unlock()
     }
@@ -243,6 +252,8 @@ private struct JobProgressEmitter: Sendable {
     let outputWidth: Int
     let outputHeight: Int
     let modelName: String
+    let modelID: CoreMLModelIdentifier
+    let modelRegistry: CoreMLModelRegistry
     let tileSize: Int
     let tileOverlap: Int
     let gridColumns: Int
@@ -306,7 +317,7 @@ private struct JobProgressEmitter: Sendable {
                 tileOverlap: tileOverlap,
                 gridColumns: gridColumns,
                 gridRows: gridRows,
-                requestedCompute: policy.description,
+                requestedCompute: policy.description(for: modelID, registry: modelRegistry),
                 didRunDenoise: didRunDenoise,
                 timings: timings
             )
@@ -413,12 +424,12 @@ public actor TiledPipelineExecutor {
 
     private func enqueueComputePolicy(_ requestedUnits: MLComputeUnits) -> Task<Void, Never> {
         let units = modelRegistry.effectiveComputeUnits(for: requestedUnits)
-        requestedComputePolicy.setFromRequest(Self.requestedComputeDescription(units))
+        requestedComputePolicy.setFromRequest(Self.requestedComputeDescription(units), rawUnits: requestedUnits)
         let previous = pendingComputePolicy
         let registry = modelRegistry
         let transition = Task {
             await previous?.value
-            await registry.setComputeUnits(units)
+            await registry.setComputeUnits(requestedUnits)
         }
         pendingComputePolicy = transition
         return transition
@@ -530,8 +541,8 @@ public actor TiledPipelineExecutor {
     }
 
     /// Requested policy accessor for diagnostics tests. Not operator-placement evidence.
-    func currentRequestedComputeDescriptionForTesting() -> String {
-        requestedComputePolicy.description
+    func currentRequestedComputeDescriptionForTesting(modelID: CoreMLModelIdentifier = .quickSRx2_256) -> String {
+        requestedComputePolicy.description(for: modelID, registry: modelRegistry)
     }
 
     /// Clears a stale pause so a resumed `executeOrResumeJob` can continue.
@@ -613,8 +624,15 @@ public actor TiledPipelineExecutor {
         // cleanup are installed above. Capture the request revision first: a newer tier/background
         // request may land while this read is suspended and must win over the stale entry snapshot.
         let entryPolicyRevision = requestedComputePolicy.currentRevision
-        let requestedCompute = Self.requestedComputeDescription(await modelRegistry.currentUnits())
-        requestedComputePolicy.publishIfRevisionUnchanged(requestedCompute, expectedRevision: entryPolicyRevision)
+        let rawRequestedUnits = await modelRegistry.currentRequestedUnits()
+        let legacyDescription = Self.requestedComputeDescription(modelRegistry.effectiveComputeUnits(for: rawRequestedUnits))
+        requestedComputePolicy.publishIfRevisionUnchanged(legacyDescription, rawUnits: rawRequestedUnits,
+                                                         expectedRevision: entryPolicyRevision)
+        // Tier changes only select a shape; compute routing is family-specific. Use the frozen
+        // checkpoint/config even before decoding has selected the new job's final memory tier.
+        let executionModelID = try CoreMLModelIdentifier.superResolver(backbone: effectiveConfig.backbone,
+            tier: existingCheckpoint?.tileConfig.tier ?? .tierB_ConstrainedMemory)
+        let requestedCompute = requestedComputePolicy.description(for: executionModelID, registry: modelRegistry)
         Diagnostics.shared.record(
             category: .pipeline,
             level: .notice,
@@ -797,7 +815,7 @@ public actor TiledPipelineExecutor {
                     currentTileDescriptor: nil,
                     phase: .preparingModels,
                     elapsedSeconds: Self.elapsedSeconds(sinceNanos: jobStartNanos),
-                    requestedCompute: requestedComputePolicy.description
+                    requestedCompute: requestedComputePolicy.description(for: executionModelID, registry: modelRegistry)
                 )
             )
         } else {
@@ -813,11 +831,12 @@ public actor TiledPipelineExecutor {
                     estimatedSecondsRemaining: nil,
                     currentTileDescriptor: nil,
                     elapsedSeconds: Self.elapsedSeconds(sinceNanos: jobStartNanos),
-                    requestedCompute: requestedComputePolicy.description
+                    requestedCompute: requestedComputePolicy.description(for: executionModelID, registry: modelRegistry)
                 )
             )
 
             let computePolicy = requestedComputePolicy
+            let progressRegistry = modelRegistry
             let decodeProgressHandler: @Sendable (Double) -> Void = { fraction in
                 let clamped = fraction.isFinite ? min(max(fraction, 0.0), 1.0) : 0.0
                 progressHandler?(
@@ -830,7 +849,7 @@ public actor TiledPipelineExecutor {
                         estimatedSecondsRemaining: nil,
                         currentTileDescriptor: nil,
                         elapsedSeconds: Self.elapsedSeconds(sinceNanos: jobStartNanos),
-                        requestedCompute: computePolicy.description
+                        requestedCompute: computePolicy.description(for: executionModelID, registry: progressRegistry)
                     )
                 )
             }
@@ -874,9 +893,9 @@ public actor TiledPipelineExecutor {
 
             let tileConfig: TileConfiguration
             if let overrideTier {
-                tileConfig = TileConfiguration(tier: overrideTier)
+                tileConfig = TileConfiguration(tier: overrideTier, backbone: effectiveConfig.backbone)
             } else {
-                tileConfig = HardwareTelemetry.makeTileConfiguration()
+                tileConfig = HardwareTelemetry.makeTileConfiguration(backbone: effectiveConfig.backbone)
             }
             plan = TileGridPlanner.makePlan(
                 sourceWidth: decoded.decodedWidth,
@@ -984,17 +1003,18 @@ public actor TiledPipelineExecutor {
                     sourceHeight: decoded.decodedHeight,
                     outputWidth: outputWidth,
                     outputHeight: outputHeight,
-                    requestedCompute: requestedComputePolicy.description,
+                    requestedCompute: requestedComputePolicy.description(for: executionModelID, registry: modelRegistry),
                     didRunDenoise: didRunDenoise
                 )
             )
         }
 
         let totalTiles = plan.totalTiles
-        let modelName = CoreMLModelIdentifier.superResolver(
+        let modelID = try CoreMLModelIdentifier.superResolver(
             backbone: checkpoint.config.backbone,
             tier: checkpoint.tileConfig.tier
-        ).rawValue
+        )
+        let modelName = modelID.rawValue
 
         let progress = JobProgressEmitter(
             jobID: jobID,
@@ -1004,6 +1024,8 @@ public actor TiledPipelineExecutor {
             outputWidth: checkpoint.outputWidth,
             outputHeight: checkpoint.outputHeight,
             modelName: modelName,
+            modelID: modelID,
+            modelRegistry: modelRegistry,
             tileSize: checkpoint.tileConfig.inputTileSize,
             tileOverlap: checkpoint.tileConfig.inputOverlap,
             gridColumns: plan.cols,
@@ -1032,7 +1054,7 @@ public actor TiledPipelineExecutor {
                 "gridColumns": "\(plan.cols)",
                 "gridRows": "\(plan.rows)",
                 "totalTiles": "\(plan.totalTiles)",
-                "computeRequested": requestedCompute,
+                "computeRequested": requestedComputePolicy.description(for: modelID, registry: modelRegistry),
                 "didRunDenoise": checkpoint.didRunDenoise ? "true" : "false"
             ]
         )
@@ -1432,7 +1454,7 @@ public actor TiledPipelineExecutor {
         timings.extractionSeconds = Self.seconds(from: extractionStart.duration(to: .now))
 
         // Native 2× trained super-resolution on transfer-encoded luminance.
-        let superResolverID = CoreMLModelIdentifier.superResolver(
+        let superResolverID = try CoreMLModelIdentifier.superResolver(
             backbone: checkpoint.config.backbone,
             tier: checkpoint.tileConfig.tier
         )
@@ -1957,7 +1979,8 @@ public actor TiledPipelineExecutor {
                 sourceHeight: state.sourceHeight,
                 outputWidth: state.outputWidth,
                 outputHeight: state.outputHeight,
-                requestedCompute: requestedComputePolicy.description,
+                requestedCompute: requestedComputePolicy.description(for: try CoreMLModelIdentifier.superResolver(
+                    backbone: state.config.backbone, tier: state.tileConfig.tier), registry: modelRegistry),
                 didRunDenoise: state.didRunDenoise
             )
         )
@@ -2084,7 +2107,7 @@ public actor TiledPipelineExecutor {
               state.sourceWidth <= Int.max / scale, state.sourceHeight <= Int.max / scale,
               state.outputWidth == state.sourceWidth * scale,
               state.outputHeight == state.sourceHeight * scale,
-              state.tileConfig == TileConfiguration(tier: state.tileConfig.tier),
+              state.tileConfig == TileConfiguration(tier: state.tileConfig.tier, backbone: state.config.backbone),
               state.totalTiles > 0,
               state.lastCompletedTileIndex >= -1,
               state.lastCompletedTileIndex < state.totalTiles,

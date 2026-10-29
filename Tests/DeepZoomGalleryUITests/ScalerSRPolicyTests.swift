@@ -232,12 +232,19 @@ final class ScalerSRPolicyTests: XCTestCase {
             XCTAssertEqual(config.backbone, selected)
             XCTAssertEqual(config.scaleFactor, .x2)
             XCTAssertEqual(config.denoiseMode, .off)
+            XCTAssertEqual(model.tileConfig.inputOverlap, selected == .hatSmall ? 32 :
+                (model.tileConfig.tier == .tierA_HighMemory ? 24 : 16))
             XCTAssertNoThrow(try ScalerSRPolicy.validateJobConfig(config))
             let artifact = try XCTUnwrap(model.completedArtifacts)
             XCTAssertFalse(ScalerSRPolicy.resumeDisposition(for: artifact.checkpoint).isRefused)
+            XCTAssertEqual(artifact.checkpoint.tileConfig,
+                TileConfiguration(tier: artifact.checkpoint.tileConfig.tier, backbone: selected))
+            let recordedOverlap = model.latestProgress?.tileOverlap
             model.selectedModel = selected == .quickSRNet ? .edsrBaseline : .quickSRNet
             XCTAssertEqual(model.backbone, selected, "A later picker change must not relabel the displayed artifact")
             XCTAssertEqual(artifact.checkpoint.config.backbone, selected)
+            XCTAssertEqual(model.latestProgress?.tileOverlap, recordedOverlap,
+                           "Changing next-job geometry must not relabel the completed artifact's progress")
         }
     }
 

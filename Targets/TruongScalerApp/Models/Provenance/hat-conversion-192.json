@@ -1,0 +1,48 @@
+{
+  "model": "HAT-S",
+  "parameters": 9473471,
+  "inputShape": [
+    1,
+    3,
+    192,
+    192
+  ],
+  "outputShape": [
+    1,
+    3,
+    384,
+    384
+  ],
+  "checkpointSHA256": "3e249a901c2aed6b82548875e21847ef6c015a40c814237a7a0abb10c69d5ddf",
+  "officialRevision": "1638a9a822581657811867bf670717f8371fc3e5",
+  "precision": "fp32",
+  "cachedOfficialMask": true,
+  "sharedSpatialUnfolds": 6,
+  "fullTorchLoweringMaxAbs": 0.0,
+  "numpyScalarIntCompatibility": true,
+  "maskStorage": "Lossless two-value LUT0/-100, attention arithmetic FP32",
+  "losslessMaskConstants": [
+    "op_389_promoted"
+  ],
+  "learnedWeightsPalettized": false,
+  "traceSeconds": 6.792024583002785,
+  "conversionSeconds": 16.433466750007938,
+  "parity": "NOT_RUN",
+  "phoneSpeedAndQuality": "NOT_MEASURED",
+  "actualANEPlacement": "NOT_MEASURED",
+  "weightLayout": {
+    "tensorBlobsVerifiedByteIdentical": 791,
+    "files": [
+      {
+        "file": "weight.bin",
+        "bytes": 57672064
+      },
+      {
+        "file": "weight_001.bin",
+        "bytes": 58591232
+      }
+    ]
+  },
+  "positionalBiasStorage": "precomputed FP32 for bounded GPU specialization memory",
+  "conversionOrigin": "Lossless blob repack of the independently validated masked-192 candidate; its post-training mask pass materialized positional biases"
+}

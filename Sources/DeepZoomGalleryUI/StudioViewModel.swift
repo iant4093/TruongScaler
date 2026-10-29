@@ -400,7 +400,11 @@ public final class StudioViewModel {
     /// for inspection, export and handoff; the new product policy never relabels old 4× pixels.
     public var selectedScaleFactor: ScaleFactor { ScalerSRPolicy.scaleFactor }
     /// Choice for the next job; a displayed/resumed artifact always owns its recorded model.
-    public var selectedModel: BackboneModelKind = ScalerSRPolicy.backbone
+    public var selectedModel: BackboneModelKind = ScalerSRPolicy.backbone {
+        didSet {
+            tileConfig = TileConfiguration(tier: tileConfig.tier, backbone: selectedModel)
+        }
+    }
     public var scaleFactor: ScaleFactor {
         displayedOutputRecord.flatMap { ScaleFactor(rawValue: $0.scaleFactor) } ?? derivedScaleFactor ?? selectedScaleFactor
     }
@@ -2139,10 +2143,10 @@ public final class StudioViewModel {
         let modelName: String? = {
             if let artifacts {
                 guard artifacts.checkpoint.config.backbone.isSupported else { return "Previous model" }
-                return CoreMLModelIdentifier.superResolver(
+                return (try? CoreMLModelIdentifier.superResolver(
                     backbone: artifacts.checkpoint.config.backbone,
                     tier: artifacts.checkpoint.tileConfig.tier
-                ).rawValue
+                ))?.rawValue ?? artifacts.checkpoint.config.backbone.rawValue
             }
             return base?.modelName
         }()
@@ -2244,10 +2248,10 @@ public final class StudioViewModel {
                 "actualScale": "\(FormatAwareExporter.actualScaleFactor(artifacts: artifacts))x",
                 "elapsedSeconds": String(format: "%.3f", processingElapsedSeconds),
                 "didRunDenoise": artifacts.checkpoint.didRunDenoise ? "true" : "false",
-                "model": CoreMLModelIdentifier.superResolver(
+                "model": (try? CoreMLModelIdentifier.superResolver(
                     backbone: artifacts.checkpoint.config.backbone,
                     tier: artifacts.checkpoint.tileConfig.tier
-                ).rawValue
+                ))?.rawValue ?? artifacts.checkpoint.config.backbone.rawValue
             ]
         )
         await backgroundCoordinator.completeJob(success: saveError == nil, message: saveError == nil ? "Upscale complete" : "Result could not be saved")

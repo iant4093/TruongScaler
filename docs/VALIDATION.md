@@ -3,6 +3,39 @@
 The launch/repository baseline was validated locally on **2026-10-28**; the subsequent hosted-GPU precision follow-up is recorded separately below. Current commands and required checks are in [DEVELOPMENT.md](DEVELOPMENT.md). Generated logs/results stay in the ignored `build/` directory. The preceding application review is recorded separately below; historical agent evidence is archived outside the source repository.
 
 
+## HAT-S native 2× feature — 2026-10-28
+
+This feature branch adds QuickSRNet (Fast, default), EDSR (Balanced) and HAT-S (Best), with two shapes each. Build 1008 remains the separately published two-model baseline. The labels express intended tradeoffs; no physical-phone quality ranking or speed guarantee is established.
+
+| Final executed check | Passed | Skipped | Failures |
+| --- | ---: | ---: | ---: |
+| Mac package, complete strict concurrency and warnings as errors | 445 | 1 | 0 |
+| All nine actual iOS simulator package suites | 477 | 1 | 0 |
+| Actual app-hosted UIKit tests, including production screenshot capture | 19 | 0 | 0 |
+| Python metadata/process-supervision fixtures | 13 | 0 | 0 |
+
+There were **496 actual iOS passes**, including capture. Repeated executions are not added to these counts. The optional 48 MP I/O benchmark was skipped on each package platform. All three unsigned device Debug/Release and simulator app/widget builds and six-model resource audits passed. A separate binary audit verified device arm64/IOS unsigned executables, simulator IOSSIMULATOR slices with linker ad-hoc signatures and no development team. Release packaging verifies matching external app/widget dSYM UUIDs and archive checksums. Builds are separate from executed tests.
+
+The new official `HAT-S_SRx2.pth` checkpoint has SHA-256 `3e249a901c2aed6b82548875e21847ef6c015a40c814237a7a0abb10c69d5ddf`; the pinned source revision is `1638a9a822581657811867bf670717f8371fc3e5`, with 9,473,471 loaded parameters. Both static shapes preserve FP32 arithmetic and FP16 tensor boundaries. The independent original official FP32 reference retains its own masks and `nn.Unfold`. Full tensors use identical half-rounded inputs; lossless reference caches record input/source/checkpoint hashes. Neither a shared custom reference nor a stub supplies the expected output.
+
+| HAT-S input shape | Mac compute requests | Full-tensor cases | Minimum PSNR | Maximum absolute error |
+| --- | ---: | ---: | ---: | ---: |
+| 192 | 4 | 28 | 73.1168 dB | 0.000978232 |
+| 256 | 4 | 28 | 73.1703 dB | 0.000978232 |
+
+All 56 comparisons passed exact-shape, finite-output, PSNR ≥50 dB and maximum-error <0.02 gates. Black, white, near-black, gradients, color/luminance checkers and seeded noise are covered. Extreme checker/noise predictions faithfully reproduce the official network's excursions beyond the production envelope; these require safe refusal before durable commit and are not ordinary-photo quality passes. The eight `hat-official-parity-SIZE-POLICY.json` reports, source/checkpoint manifests, sampled fixtures and complete HAT/BasicSR/timm notices ship with the assets. Existing QuickSRNet/EDSR asset digests are unchanged.
+
+Actual iOS simulator execution separately compared three independent sampled patterns for both shapes under raw CPU-only and CPU+NE requests: **12 predictions**, each with 1,024 official FP32 reference samples, unchanged fidelity gates and non-constant output assertions. Both raw GPU/all requests were also attempted for both shapes. The exercised simulator rejected those four model loads with Core ML execution-plan error **-14**, logging `MpsGraph backend validation on incompatible OS (11)`. These are **unavailable-policy observations, not GPU parity passes**. Production therefore restricts simulator HAT-S to CPU+NE (or explicit CPU-only). Outside the simulator HAT-S may request foreground GPU, while background requests remain CPU+NE. Physical-phone GPU behavior, latency and actual accelerator placement remain unmeasured. `hat-ios-compute-observations.json` records this distinction.
+
+Required-model photo checks passed flower reconstruction at both shapes, landscape color, HDR/headroom, alpha, seam/halo limits, TIFF and DNG export/reingest, unsafe-prediction refusal and exact saved-model recovery. HAT-S records a 32-pixel overlap in both tiers; existing QuickSRNet/EDSR 16/24-pixel overlaps are unchanged. Unknown or mismatched model/geometry resumes are refused before modifying canvas/journal bytes. Compute-policy race tests retain a newer background request and report the frozen job's effective request. No source photo, bookmark or human checkpoint was deleted or relabeled.
+
+The app-hosted capture used the actual production initializer and bundled models: it processed the flower with HAT-S and the landscape with QuickSRNet, saved portable records, reopened the HAT-S before/after, then captured all four README screens and current model settings. Real UIKit share, selection, trash, layout and presentation tests also passed. The screenshots illustrate the interface and do not establish physical-phone quality.
+
+Warm Mac full-tensor predictions were approximately **0.43–0.48 seconds at 192** and **0.78 seconds at 256** for GPU-enabled requests, versus approximately **2.8 / 5.6 seconds** for CPU requests. These are measured Mac tiles, not full RAW/phone timings. Simulator CPU attention is substantially slower: its complete native run took about 26.8 minutes. Native CI now allows 60 minutes within a 65-minute job, retaining all checks and assertions.
+
+The conversion caches the exact fixed mask and shares an equivalent spatial index lowering for `Unfold`; both sizes have a zero-difference full PyTorch lowering check. Its two-value mask encoding is lossless; learned weights remain FP32. Precomputed positional biases avoid the excessive specialization memory observed with a rejected compact-gather candidate. Typed weight blobs are rehashed byte-for-byte after lossless file sharding, including direct constexpr inputs. Final canonical prediction/conversion processes stayed below the 8 GiB footprint guard; maximum observed canonical parity footprint was 6,705 MiB. An earlier compact candidate exceeded the guard and was terminated; it is excluded from shipped assets. The final Mac suite peaked at 5,667 MiB. The native wrapper's 689 MiB command-descendant peak excludes CoreSimulator services outside its ancestry. Source, checkpoint, asset, notice and built-app hashes are streamed.
+
+SwiftLint, actionlint, offline zizmor and ShellCheck passed. Generated candidates, logs, full reference caches, result bundles and environments remain outside version control. One shared conversion environment is retained; rejected/duplicate task-owned model candidates are removed after validation. Physical phone execution, signed handoff, Files-provider behavior, OS scheduling, real Canon R7 CR3 compatibility, phone memory/latency and physical image quality remain unmeasured. No phone session was manipulated and no new app release was published.
 
 ## Hosted-GPU precision follow-up — 2026-10-28
 

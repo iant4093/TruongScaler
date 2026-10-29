@@ -7,9 +7,9 @@ import os
 
 /// Device memory tier (`docs/DEVELOPMENT.md` Section 4.2).
 public enum DeviceTier: String, Codable, Sendable, Equatable {
-    /// >= 2.5 GB available memory -> 256x256 input tiles with 24px overlap (stride 232)
+    /// >= 2.5 GB available memory -> 256×256 input tiles; overlap depends on the recorded model.
     case tierA_HighMemory
-    /// < 2.5 GB available memory -> 192x192 input tiles with 16px overlap (stride 176)
+    /// < 2.5 GB available memory -> 192×192 input tiles; overlap depends on the recorded model.
     case tierB_ConstrainedMemory
 }
 
@@ -23,15 +23,17 @@ public struct TileConfiguration: Codable, Sendable, Equatable {
         inputTileSize - inputOverlap
     }
 
-    public init(tier: DeviceTier) {
+    /// Stored dimensions/overlap remain the complete Codable representation. Old QuickSRNet/EDSR
+    /// checkpoints therefore retain 24/16px halos; a HAT-S job records its own 32px halo explicitly.
+    public init(tier: DeviceTier, backbone: BackboneModelKind = .quickSRNet) {
         self.tier = tier
         switch tier {
         case .tierA_HighMemory:
             self.inputTileSize = 256
-            self.inputOverlap = 24
+            self.inputOverlap = backbone == .hatSmall ? 32 : 24
         case .tierB_ConstrainedMemory:
             self.inputTileSize = 192
-            self.inputOverlap = 16
+            self.inputOverlap = backbone == .hatSmall ? 32 : 16
         }
     }
 
@@ -69,8 +71,11 @@ public struct HardwareTelemetry: Sendable {
         return bytes >= tierAThresholdBytes ? .tierA_HighMemory : .tierB_ConstrainedMemory
     }
 
-    public static func makeTileConfiguration(overrideAvailableBytes: UInt64? = nil) -> TileConfiguration {
-        TileConfiguration(tier: resolveDeviceTier(overrideAvailableBytes: overrideAvailableBytes))
+    public static func makeTileConfiguration(
+        overrideAvailableBytes: UInt64? = nil,
+        backbone: BackboneModelKind = .quickSRNet
+    ) -> TileConfiguration {
+        TileConfiguration(tier: resolveDeviceTier(overrideAvailableBytes: overrideAvailableBytes), backbone: backbone)
     }
 
     /// Computes 64-byte aligned row stride with overflow checking:

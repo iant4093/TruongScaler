@@ -144,30 +144,42 @@ def main() -> int:
 
     # Two shapes of each trained native 2× family, plus notices/provenance.
     models = app / "Models"
-    expected_models = {f"{family}_x2_{size}.mlmodelc" for family in ("QuickSRNet_Large", "EDSR_Baseline") for size in (192, 256)}
+    expected_models = {f"{family}_x2_{size}.mlmodelc" for family in ("QuickSRNet_Large", "EDSR_Baseline", "HAT_S") for size in (192, 256)}
     if not models.is_dir():
         failures.append("missing embedded Models tree")
     else:
         present = {p.name for p in models.iterdir() if p.is_dir()}
         if expected_models != {name for name in present if name.endswith(".mlmodelc")}:
-            failures.append(f"embedded Models missing: {sorted(expected_models - present)}")
+            failures.append(f"embedded Models mismatch; missing: {sorted(expected_models - present)}, unexpected: {sorted({name for name in present if name.endswith('.mlmodelc')} - expected_models)}")
         for name in sorted(expected_models):
             asset = models / name
             for required in ("coremldata.bin", "metadata.json", "model.mil", "weights/weight.bin", "analytics/coremldata.bin"):
                 if not (asset / required).is_file():
                     failures.append(f"{name} missing {required}")
-        for notice in ("QuickSRNet-LICENSE.txt", "EDSR-LICENSE.txt"):
+        for notice in ("QuickSRNet-LICENSE.txt", "EDSR-LICENSE.txt", "HAT-S-LICENSE.txt", "HAT-S-BasicSR-LICENSE.txt", "HAT-S-timm-LICENSE.txt"):
             if not (models / "Notices" / notice).is_file():
                 failures.append(f"Models/Notices missing {notice}")
-        for provenance in ("checkpoint-sha256.txt", "model-inventory.json"):
+        for provenance in ("checkpoint-sha256.txt", "model-inventory.json", "hat-source-manifest.json"):
             if not (models / "Provenance" / provenance).is_file():
                 failures.append(f"Models/Provenance missing {provenance}")
         try:
             inventory_json = json.loads((models / "Provenance/model-inventory.json").read_text())
-            if inventory_json.get("canonicalModelCount") != 4:
-                failures.append("embedded model inventory does not declare exactly four native 2× variants")
+            rows = inventory_json.get("models", [])
+            expected_ids = {Path(name).stem for name in expected_models}
+            if (inventory_json.get("canonicalModelCount") != 6 or len(rows) != 6 or
+                    {row.get("identifier") for row in rows} != expected_ids or
+                    any(row.get("asset") != row.get("identifier", "") + ".mlmodelc" for row in rows)):
+                failures.append("embedded model inventory does not declare exactly the six native 2× variants")
         except (OSError, json.JSONDecodeError) as error:
             failures.append(f"embedded model inventory unreadable: {error}")
+        try:
+            manifest = json.loads((models / "Provenance/hat-source-manifest.json").read_text())
+            if (manifest.get("repository") != "https://github.com/XPixelGroup/HAT" or
+                    manifest.get("revision") != "1638a9a822581657811867bf670717f8371fc3e5" or
+                    manifest.get("basicSRTag") != "v1.3.4.9" or not manifest.get("files")):
+                failures.append("embedded HAT source manifest does not identify the pinned official reference")
+        except (OSError, json.JSONDecodeError) as error:
+            failures.append(f"embedded HAT source manifest unreadable: {error}")
 
     if args.entitlements is not None:
         entitlements = load_plist(args.entitlements)
@@ -193,7 +205,7 @@ def main() -> int:
         for failure in failures:
             print(f"FAIL: {failure}", file=sys.stderr)
         return 1
-    print("PASS: app executable, Info.plist, extension, accent asset, BG family and 4 trained native 2× models are consistent")
+    print("PASS: app executable, Info.plist, extension, accent asset, BG family and 6 trained native 2× models are consistent")
     return 0
 
 

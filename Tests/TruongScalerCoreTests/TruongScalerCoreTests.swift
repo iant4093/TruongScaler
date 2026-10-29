@@ -12,7 +12,7 @@ final class TruongScalerCoreTests: XCTestCase {
             XCTAssertEqual(try JSONEncoder().encode(decoded), data)
             XCTAssertFalse(BackboneModelKind.allCases.contains(decoded))
         }
-        XCTAssertEqual(BackboneModelKind.allCases, [.quickSRNet, .edsrBaseline])
+        XCTAssertEqual(BackboneModelKind.allCases, [.quickSRNet, .edsrBaseline, .hatSmall])
     }
 
     func testTierSelectionAndTileMath() {

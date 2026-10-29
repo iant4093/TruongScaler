@@ -36,21 +36,26 @@ class BuiltMetadataTests(unittest.TestCase):
             NSExtension=dict(NSExtensionPointIdentifier="com.apple.widgetkit-extension"))))
         (widget / "TruongScalerLiveActivityExtension").write_bytes(b"layout-fixture-widget")
         models = self.app / "Models"
-        for family in ["QuickSRNet_Large", "EDSR_Baseline"]:
+        for family in ["QuickSRNet_Large", "EDSR_Baseline", "HAT_S"]:
             for size in [192, 256]:
                 asset = models / f"{family}_x2_{size}.mlmodelc"
                 for name in ["coremldata.bin", "metadata.json", "model.mil", "weights/weight.bin", "analytics/coremldata.bin"]:
                     target = asset / name
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(b"layout-fixture-only")
-        for notice in ["QuickSRNet-LICENSE.txt", "EDSR-LICENSE.txt"]:
+        for notice in ["QuickSRNet-LICENSE.txt", "EDSR-LICENSE.txt", "HAT-S-LICENSE.txt", "HAT-S-BasicSR-LICENSE.txt", "HAT-S-timm-LICENSE.txt"]:
             target = models / "Notices" / notice
             target.parent.mkdir(exist_ok=True)
             target.write_text("layout-fixture-notice")
         provenance = models / "Provenance"
         provenance.mkdir()
         (provenance / "checkpoint-sha256.txt").write_text("layout-fixture-checksums")
-        (provenance / "model-inventory.json").write_text(json.dumps(dict(canonicalModelCount=4)))
+        identifiers = [f"{family}_x2_{size}" for family in ["QuickSRNet_Large", "EDSR_Baseline", "HAT_S"] for size in [192, 256]]
+        (provenance / "model-inventory.json").write_text(json.dumps(dict(canonicalModelCount=6,
+            models=[dict(identifier=name, asset=name + ".mlmodelc") for name in identifiers])))
+        (provenance / "hat-source-manifest.json").write_text(json.dumps(dict(repository="https://github.com/XPixelGroup/HAT",
+            revision="1638a9a822581657811867bf670717f8371fc3e5", basicSRTag="v1.3.4.9",
+            files=[dict(path="layout-fixture-only", sha256="0" * 64, bytes=1)])))
         self.assetutil = root / "assetutil-fixture"
         self.assetutil.write_text('#!/bin/sh\nprintf \'"Name" : "AccentColor"\\n"System Color Name" : "systemGreenColor"\\n\'\n')
         self.assetutil.chmod(0o700)
@@ -73,6 +78,38 @@ class BuiltMetadataTests(unittest.TestCase):
 
     def testEmbeddedHostedTestBundleIsRefused(self):
         (self.app / "PlugIns/TruongScalerHostTests.xctest").mkdir()
+        self.assertNotEqual(self.audit().returncode, 0)
+
+    def testMissingHATShapeIsRefused(self):
+        (self.app / "Models/HAT_S_x2_256.mlmodelc/weights/weight.bin").unlink()
+        self.assertNotEqual(self.audit().returncode, 0)
+
+    def testRetiredCompiledModelIsRefused(self):
+        (self.app / "Models/Retired_x4_256.mlmodelc").mkdir()
+        self.assertNotEqual(self.audit().returncode, 0)
+
+    def testFourModelInventoryCannotDescribeASixAssetBundle(self):
+        path = self.app / "Models/Provenance/model-inventory.json"
+        inventory = json.loads(path.read_text())
+        inventory["canonicalModelCount"] = 4
+        path.write_text(json.dumps(inventory))
+        self.assertNotEqual(self.audit().returncode, 0)
+
+    def testEachHATSupportNoticeIsRequired(self):
+        for name in ["HAT-S-LICENSE.txt", "HAT-S-BasicSR-LICENSE.txt", "HAT-S-timm-LICENSE.txt"]:
+            path = self.app / "Models/Notices" / name
+            original = path.read_bytes()
+            path.unlink()
+            self.assertNotEqual(self.audit().returncode, 0, name)
+            path.write_bytes(original)
+
+    def testMissingOrUnpinnedHATSourceManifestIsRefused(self):
+        path = self.app / "Models/Provenance/hat-source-manifest.json"
+        original = json.loads(path.read_text())
+        path.unlink()
+        self.assertNotEqual(self.audit().returncode, 0)
+        original["revision"] = "0" * 40
+        path.write_text(json.dumps(original))
         self.assertNotEqual(self.audit().returncode, 0)
 
 

@@ -92,6 +92,18 @@ final class TrainedModelGuardTests: XCTestCase {
             XCTAssertThrowsError(try processor.restoreSuperResolvedLuminance(prediction, tensors: tensors,
                 outputSize: size, modelName: "test", tileIndex: 4))
         }
+        for backbone in [BackboneModelKind.edsrBaseline, .hatSmall] {
+            let restored = try processor.restoreSuperResolvedLuminance(encoded, tensors: tensors,
+                outputSize: size, modelName: backbone.rawValue, tileIndex: 0,
+                predictionRange: backbone.predictionSampleRange)
+            for i in restored.indices { XCTAssertEqual(Float(restored[i]), Float(logValues[i]), accuracy: 0.001) }
+            for invalid in [Float16.nan, .infinity, -0.5, 1.5] {
+                var prediction = encoded; prediction[0] = invalid
+                XCTAssertThrowsError(try processor.restoreSuperResolvedLuminance(prediction, tensors: tensors,
+                    outputSize: size, modelName: backbone.rawValue, tileIndex: 4,
+                    predictionRange: backbone.predictionSampleRange))
+            }
+        }
     }
 
     func testUnavailableJobRefusalLeavesExistingArtifactsUnmodified() async throws {

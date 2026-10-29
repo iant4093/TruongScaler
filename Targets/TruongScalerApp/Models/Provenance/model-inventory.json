@@ -1,146 +1,227 @@
 {
-  "schemaVersion": 2,
-  "canonicalModelCount": 4,
-  "family": "Native 2x trained model choices",
-  "nativeScale": 2,
-  "models": [
-    {
-      "identifier": "QuickSRNet_Large_x2_192",
-      "asset": "QuickSRNet_Large_x2_192.mlmodelc",
-      "inputShape": [
-        1,
-        3,
-        192,
-        192
-      ],
-      "outputShape": [
-        1,
-        3,
-        384,
-        384
-      ],
-      "inputTensorName": "input_tile",
-      "outputTensorName": "output_tile",
-      "inputDataType": "Float16",
-      "outputDataType": "Float16",
-      "computePrecision": "FLOAT16",
-      "assetDirectorySHA256": "1bbba62597fc67da4ffae578b4429a34bce2ce065b7d24ee6c78a9a383a1a207",
-      "weightBinSHA256": "a532b2de376f6388aa28d2b7982f30c5db40e9279b633552c0f25708168eee8f",
-      "checkpoint": "quicksrnet-large-2x",
-      "checkpointSHA256": "0c6e0f4e2b444b161d6bce22852b0e2aa0dc391ef804c99e867882dd9715ad9d",
-      "upstreamRepo": "https://github.com/quic/aimet-model-zoo",
-      "upstreamRevision": "1bd2bf5b17cdda9251437c444009b29e1a25054b",
-      "license": "BSD-3-Clause"
-    },
-    {
-      "identifier": "QuickSRNet_Large_x2_256",
-      "asset": "QuickSRNet_Large_x2_256.mlmodelc",
-      "inputShape": [
-        1,
-        3,
-        256,
-        256
-      ],
-      "outputShape": [
-        1,
-        3,
-        512,
-        512
-      ],
-      "inputTensorName": "input_tile",
-      "outputTensorName": "output_tile",
-      "inputDataType": "Float16",
-      "outputDataType": "Float16",
-      "computePrecision": "FLOAT16",
-      "assetDirectorySHA256": "79e377b33d7c123e0364b6786efb32684b503ce25b9cc4eb84797816b4f6ba5c",
-      "weightBinSHA256": "a532b2de376f6388aa28d2b7982f30c5db40e9279b633552c0f25708168eee8f",
-      "checkpoint": "quicksrnet-large-2x",
-      "checkpointSHA256": "0c6e0f4e2b444b161d6bce22852b0e2aa0dc391ef804c99e867882dd9715ad9d",
-      "upstreamRepo": "https://github.com/quic/aimet-model-zoo",
-      "upstreamRevision": "1bd2bf5b17cdda9251437c444009b29e1a25054b",
-      "license": "BSD-3-Clause"
-    },
-    {
-      "identifier": "EDSR_Baseline_x2_192",
-      "asset": "EDSR_Baseline_x2_192.mlmodelc",
-      "inputShape": [
-        1,
-        3,
-        192,
-        192
-      ],
-      "outputShape": [
-        1,
-        3,
-        384,
-        384
-      ],
-      "inputTensorName": "input_tile",
-      "outputTensorName": "output_tile",
-      "inputDataType": "Float16",
-      "outputDataType": "Float16",
-      "computePrecision": "FLOAT32",
-      "assetDirectorySHA256": "cb38b025abe87d9f0a85db1a1ded89f8d88e90343d19b4d81746afae892e1ce1",
-      "weightBinSHA256": "1b838f97659451b6e5e17d1684ca07dc60acd54eec0c22dacb87ced97f1decd2",
-      "checkpoint": "edsr_baseline-2x",
-      "checkpointSHA256": "1bc9523228fdc3b0a5ddb0d7062001e22b31bbb398ae09cfdefb97e8ee06e171",
-      "upstreamRepo": "https://github.com/sanghyun-son/EDSR-PyTorch",
-      "upstreamRevision": "8dba5581a7502b92de9641eb431130d6c8ca5d7f",
-      "license": "MIT",
-      "productionRawPredictionRange": [
-        -0.25,
-        1.25
-      ]
-    },
-    {
-      "identifier": "EDSR_Baseline_x2_256",
-      "asset": "EDSR_Baseline_x2_256.mlmodelc",
-      "inputShape": [
-        1,
-        3,
-        256,
-        256
-      ],
-      "outputShape": [
-        1,
-        3,
-        512,
-        512
-      ],
-      "inputTensorName": "input_tile",
-      "outputTensorName": "output_tile",
-      "inputDataType": "Float16",
-      "outputDataType": "Float16",
-      "computePrecision": "FLOAT32",
-      "assetDirectorySHA256": "c262b82b4951b0f540dfe38a23f7c554507a8905e2c283991d6c609155834280",
-      "weightBinSHA256": "1b838f97659451b6e5e17d1684ca07dc60acd54eec0c22dacb87ced97f1decd2",
-      "checkpoint": "edsr_baseline-2x",
-      "checkpointSHA256": "1bc9523228fdc3b0a5ddb0d7062001e22b31bbb398ae09cfdefb97e8ee06e171",
-      "upstreamRepo": "https://github.com/sanghyun-son/EDSR-PyTorch",
-      "upstreamRevision": "8dba5581a7502b92de9641eb431130d6c8ca5d7f",
-      "license": "MIT",
-      "productionRawPredictionRange": [
-        -0.25,
-        1.25
-      ]
-    }
-  ],
+  "canonicalModelCount": 6,
   "checkpoints": {
-    "quicksrnet-large-2x": {
-      "file": "quicksrnet-large-2x.pth",
-      "sha256": "0c6e0f4e2b444b161d6bce22852b0e2aa0dc391ef804c99e867882dd9715ad9d",
-      "url": "https://github.com/quic/aimet-model-zoo/releases/download/phase_2_january_artifacts/quicksrnet_large_2x_checkpoint_float32.pth.tar",
-      "repo": "https://github.com/quic/aimet-model-zoo",
-      "revision": "1bd2bf5b17cdda9251437c444009b29e1a25054b",
-      "license": "BSD-3-Clause"
-    },
     "edsr_baseline-2x": {
       "file": "edsr-baseline-x2.pt",
-      "sha256": "1bc9523228fdc3b0a5ddb0d7062001e22b31bbb398ae09cfdefb97e8ee06e171",
-      "url": "http://cv.snu.ac.kr/research/EDSR/models/edsr_baseline_x2-1bc95232.pt",
+      "license": "MIT",
       "repo": "https://github.com/sanghyun-son/EDSR-PyTorch",
       "revision": "8dba5581a7502b92de9641eb431130d6c8ca5d7f",
-      "license": "MIT"
+      "sha256": "1bc9523228fdc3b0a5ddb0d7062001e22b31bbb398ae09cfdefb97e8ee06e171",
+      "url": "http://cv.snu.ac.kr/research/EDSR/models/edsr_baseline_x2-1bc95232.pt"
+    },
+    "hat-s-2x": {
+      "file": "HAT-S_SRx2.pth",
+      "license": "Apache-2.0",
+      "repo": "https://github.com/XPixelGroup/HAT",
+      "revision": "1638a9a822581657811867bf670717f8371fc3e5",
+      "sha256": "3e249a901c2aed6b82548875e21847ef6c015a40c814237a7a0abb10c69d5ddf",
+      "url": "https://drive.google.com/file/d/1Y7-3IgWfIAui9BMQIsFT9CzZXVMlx__e/view"
+    },
+    "quicksrnet-large-2x": {
+      "file": "quicksrnet-large-2x.pth",
+      "license": "BSD-3-Clause",
+      "repo": "https://github.com/quic/aimet-model-zoo",
+      "revision": "1bd2bf5b17cdda9251437c444009b29e1a25054b",
+      "sha256": "0c6e0f4e2b444b161d6bce22852b0e2aa0dc391ef804c99e867882dd9715ad9d",
+      "url": "https://github.com/quic/aimet-model-zoo/releases/download/phase_2_january_artifacts/quicksrnet_large_2x_checkpoint_float32.pth.tar"
     }
-  }
+  },
+  "family": "Native 2x trained model choices",
+  "models": [
+    {
+      "asset": "QuickSRNet_Large_x2_192.mlmodelc",
+      "assetDirectorySHA256": "1bbba62597fc67da4ffae578b4429a34bce2ce065b7d24ee6c78a9a383a1a207",
+      "checkpoint": "quicksrnet-large-2x",
+      "checkpointSHA256": "0c6e0f4e2b444b161d6bce22852b0e2aa0dc391ef804c99e867882dd9715ad9d",
+      "computePrecision": "FLOAT16",
+      "identifier": "QuickSRNet_Large_x2_192",
+      "inputDataType": "Float16",
+      "inputShape": [
+        1,
+        3,
+        192,
+        192
+      ],
+      "inputTensorName": "input_tile",
+      "license": "BSD-3-Clause",
+      "outputDataType": "Float16",
+      "outputShape": [
+        1,
+        3,
+        384,
+        384
+      ],
+      "outputTensorName": "output_tile",
+      "upstreamRepo": "https://github.com/quic/aimet-model-zoo",
+      "upstreamRevision": "1bd2bf5b17cdda9251437c444009b29e1a25054b",
+      "weightBinSHA256": "a532b2de376f6388aa28d2b7982f30c5db40e9279b633552c0f25708168eee8f"
+    },
+    {
+      "asset": "QuickSRNet_Large_x2_256.mlmodelc",
+      "assetDirectorySHA256": "79e377b33d7c123e0364b6786efb32684b503ce25b9cc4eb84797816b4f6ba5c",
+      "checkpoint": "quicksrnet-large-2x",
+      "checkpointSHA256": "0c6e0f4e2b444b161d6bce22852b0e2aa0dc391ef804c99e867882dd9715ad9d",
+      "computePrecision": "FLOAT16",
+      "identifier": "QuickSRNet_Large_x2_256",
+      "inputDataType": "Float16",
+      "inputShape": [
+        1,
+        3,
+        256,
+        256
+      ],
+      "inputTensorName": "input_tile",
+      "license": "BSD-3-Clause",
+      "outputDataType": "Float16",
+      "outputShape": [
+        1,
+        3,
+        512,
+        512
+      ],
+      "outputTensorName": "output_tile",
+      "upstreamRepo": "https://github.com/quic/aimet-model-zoo",
+      "upstreamRevision": "1bd2bf5b17cdda9251437c444009b29e1a25054b",
+      "weightBinSHA256": "a532b2de376f6388aa28d2b7982f30c5db40e9279b633552c0f25708168eee8f"
+    },
+    {
+      "asset": "EDSR_Baseline_x2_192.mlmodelc",
+      "assetDirectorySHA256": "cb38b025abe87d9f0a85db1a1ded89f8d88e90343d19b4d81746afae892e1ce1",
+      "checkpoint": "edsr_baseline-2x",
+      "checkpointSHA256": "1bc9523228fdc3b0a5ddb0d7062001e22b31bbb398ae09cfdefb97e8ee06e171",
+      "computePrecision": "FLOAT32",
+      "identifier": "EDSR_Baseline_x2_192",
+      "inputDataType": "Float16",
+      "inputShape": [
+        1,
+        3,
+        192,
+        192
+      ],
+      "inputTensorName": "input_tile",
+      "license": "MIT",
+      "outputDataType": "Float16",
+      "outputShape": [
+        1,
+        3,
+        384,
+        384
+      ],
+      "outputTensorName": "output_tile",
+      "productionRawPredictionRange": [
+        -0.25,
+        1.25
+      ],
+      "upstreamRepo": "https://github.com/sanghyun-son/EDSR-PyTorch",
+      "upstreamRevision": "8dba5581a7502b92de9641eb431130d6c8ca5d7f",
+      "weightBinSHA256": "1b838f97659451b6e5e17d1684ca07dc60acd54eec0c22dacb87ced97f1decd2"
+    },
+    {
+      "asset": "EDSR_Baseline_x2_256.mlmodelc",
+      "assetDirectorySHA256": "c262b82b4951b0f540dfe38a23f7c554507a8905e2c283991d6c609155834280",
+      "checkpoint": "edsr_baseline-2x",
+      "checkpointSHA256": "1bc9523228fdc3b0a5ddb0d7062001e22b31bbb398ae09cfdefb97e8ee06e171",
+      "computePrecision": "FLOAT32",
+      "identifier": "EDSR_Baseline_x2_256",
+      "inputDataType": "Float16",
+      "inputShape": [
+        1,
+        3,
+        256,
+        256
+      ],
+      "inputTensorName": "input_tile",
+      "license": "MIT",
+      "outputDataType": "Float16",
+      "outputShape": [
+        1,
+        3,
+        512,
+        512
+      ],
+      "outputTensorName": "output_tile",
+      "productionRawPredictionRange": [
+        -0.25,
+        1.25
+      ],
+      "upstreamRepo": "https://github.com/sanghyun-son/EDSR-PyTorch",
+      "upstreamRevision": "8dba5581a7502b92de9641eb431130d6c8ca5d7f",
+      "weightBinSHA256": "1b838f97659451b6e5e17d1684ca07dc60acd54eec0c22dacb87ced97f1decd2"
+    },
+    {
+      "asset": "HAT_S_x2_192.mlmodelc",
+      "assetDirectorySHA256": "c01486a8102968a79969f7ee2898ae0a8bb9fbcc20894a00aa33894923b5883f",
+      "checkpoint": "hat-s-2x",
+      "checkpointSHA256": "3e249a901c2aed6b82548875e21847ef6c015a40c814237a7a0abb10c69d5ddf",
+      "computePrecision": "FLOAT32",
+      "identifier": "HAT_S_x2_192",
+      "inputDataType": "Float16",
+      "inputShape": [
+        1,
+        3,
+        192,
+        192
+      ],
+      "inputTensorName": "input_tile",
+      "license": "Apache-2.0",
+      "outputDataType": "Float16",
+      "outputShape": [
+        1,
+        3,
+        384,
+        384
+      ],
+      "outputTensorName": "output_tile",
+      "productionRawPredictionRange": [
+        -0.25,
+        1.25
+      ],
+      "upstreamRepo": "https://github.com/XPixelGroup/HAT",
+      "upstreamRevision": "1638a9a822581657811867bf670717f8371fc3e5",
+      "weightBinSHA256": "c53de4d1eb68ab455ef36ce472ee13ca5d6818edcb61c419d6e8fc88d4270ce7",
+      "weightFilesSHA256": {
+        "weight.bin": "c53de4d1eb68ab455ef36ce472ee13ca5d6818edcb61c419d6e8fc88d4270ce7",
+        "weight_001.bin": "d9a363f5e955a860460acf1cf8eb046b2bdf8dd81a5c7ec4abffd75eb2d5a97a"
+      }
+    },
+    {
+      "asset": "HAT_S_x2_256.mlmodelc",
+      "assetDirectorySHA256": "f934ee6d2d6f29b38cd8054d6a326db546c98f6a659e596e28a6b30ff73e1974",
+      "checkpoint": "hat-s-2x",
+      "checkpointSHA256": "3e249a901c2aed6b82548875e21847ef6c015a40c814237a7a0abb10c69d5ddf",
+      "computePrecision": "FLOAT32",
+      "identifier": "HAT_S_x2_256",
+      "inputDataType": "Float16",
+      "inputShape": [
+        1,
+        3,
+        256,
+        256
+      ],
+      "inputTensorName": "input_tile",
+      "license": "Apache-2.0",
+      "outputDataType": "Float16",
+      "outputShape": [
+        1,
+        3,
+        512,
+        512
+      ],
+      "outputTensorName": "output_tile",
+      "productionRawPredictionRange": [
+        -0.25,
+        1.25
+      ],
+      "upstreamRepo": "https://github.com/XPixelGroup/HAT",
+      "upstreamRevision": "1638a9a822581657811867bf670717f8371fc3e5",
+      "weightBinSHA256": "b28f04c6b70698b7a073d6c9a7ecc8baa4682d773584976bd8b698ace77ecd2f",
+      "weightFilesSHA256": {
+        "weight.bin": "b28f04c6b70698b7a073d6c9a7ecc8baa4682d773584976bd8b698ace77ecd2f",
+        "weight_001.bin": "cd1030e876debdd3247e8e85f34b6981e1e7a743a34d28e74cbdfd60f27642c3",
+        "weight_002.bin": "7a61f17f195447e4504b0cd19bb1c73fd3d5fb46143a6331a45399ca9cb95a6e"
+      }
+    }
+  ],
+  "nativeScale": 2,
+  "schemaVersion": 2
 }

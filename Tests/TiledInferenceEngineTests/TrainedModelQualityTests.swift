@@ -401,7 +401,7 @@ final class TrainedModelQualityTests: XCTestCase {
                 let artifacts = try await run(source: fixture("photo_flower_lr_512x384.png"), backbone: backbone,
                     scale: .x2, denoise: .off, tier: tier)
                 let plan = TileGridPlanner.makePlan(sourceWidth: 512, sourceHeight: 384, scaleFactor: .x2,
-                    tileConfig: TileConfiguration(tier: tier))
+                    tileConfig: artifacts.checkpoint.tileConfig)
                 XCTAssertGreaterThan(plan.totalTiles, 1)
                 XCTAssertEqual(artifacts.outputBuffer.width, 1024)
                 XCTAssertEqual(artifacts.outputBuffer.height, 768)
@@ -464,7 +464,7 @@ final class TrainedModelQualityTests: XCTestCase {
     }
 
     func testSavedModelWinsOverCurrentSelectionOnRealResume() async throws {
-        for backbone in [BackboneModelKind.edsrBaseline] {
+        for backbone in [BackboneModelKind.edsrBaseline, .hatSmall] {
             let source = fixture("photo_flower_lr_512x384.png")
             let artifacts = try await run(source: source, backbone: backbone, scale: .x2,
                 denoise: .off, tier: .tierB_ConstrainedMemory)
@@ -475,12 +475,14 @@ final class TrainedModelQualityTests: XCTestCase {
                 existingCheckpoint: artifacts.checkpoint)
             XCTAssertEqual(resumed.checkpoint.config.backbone, backbone)
             XCTAssertEqual(resumed.checkpoint.jobID, artifacts.checkpoint.jobID)
+            XCTAssertEqual(resumed.checkpoint.tileConfig, artifacts.checkpoint.tileConfig)
+            if backbone == .hatSmall { XCTAssertEqual(resumed.checkpoint.tileConfig.inputOverlap, 32) }
             XCTAssertEqual(try Data(contentsOf: resumed.outputBuffer.fileURL), bytes)
         }
     }
 
     func testAdditionalModelsRejectAdversarialPhotoBeforeCommittingAnyTile() async throws {
-        for backbone in [BackboneModelKind.edsrBaseline] {
+        for backbone in [BackboneModelKind.edsrBaseline, .hatSmall] {
             let recorder = BenchmarkRecorder()
             let executor = makeExecutor()
             let config = UpscaleJobConfig(sourceImageURL: fixture("adversarial_1px_checker_512x384.png"),
@@ -500,6 +502,9 @@ final class TrainedModelQualityTests: XCTestCase {
             let checkpoint = try await store.load(jobID: config.id)
             XCTAssertEqual(checkpoint.lastCompletedTileIndex, -1)
             XCTAssertEqual(checkpoint.config.backbone, backbone)
+            let jobJournalPrefix = "journal_\(config.id.uuidString)_"
+            XCTAssertFalse(try FileManager.default.contentsOfDirectory(atPath: directory.path)
+                .contains { $0.hasPrefix(jobJournalPrefix) }, "Unsafe predictions must not begin a durable tile transaction")
         }
     }
 
