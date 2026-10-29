@@ -3,9 +3,15 @@
 The launch/repository baseline was validated locally on **2026-10-28**; the subsequent hosted-GPU precision follow-up is recorded separately below. Current commands and required checks are in [DEVELOPMENT.md](DEVELOPMENT.md). Generated logs/results stay in the ignored `build/` directory. The preceding application review is recorded separately below; historical agent evidence is archived outside the source repository.
 
 
+## Maintainer phone acceptance and GitHub release
+
+The maintainer subsequently reported testing both apps on a phone, said TruongScaler was good to go, and authorized updating GitHub with all current changes and the README. This is qualitative human acceptance of the tested app, separate from the automated results below. No per-model timing log, input dimensions, controlled quality comparison, memory trace or accelerator-placement evidence was supplied, so those measurements are not inferred. The earlier local-only validation statements describe their historical scope.
+
+The current source contains all six QuickSRNet/EDSR/HAT-S variants, conversion/reference tools, source/checkpoint provenance, notices, current screenshots and regression coverage. GitHub's four CI gates validate the exact published main revision before the unsigned release can be published; Build 1008 is the historical two-model baseline. No physical-phone signing, installation or Xcode session is controlled by the automation.
+
 ## HAT-S native 2× feature — 2026-10-28
 
-This feature branch adds QuickSRNet (Fast, default), EDSR (Balanced) and HAT-S (Best), with two shapes each. Build 1008 remains the separately published two-model baseline. The labels express intended tradeoffs; no physical-phone quality ranking or speed guarantee is established.
+This integration adds QuickSRNet (Fast, default), EDSR (Balanced) and HAT-S (Best), with two shapes each. Build 1008 remains the separately published two-model baseline. The labels express intended tradeoffs; no physical-phone quality ranking or speed guarantee is established.
 
 | Final executed check | Passed | Skipped | Failures |
 | --- | ---: | ---: | ---: |

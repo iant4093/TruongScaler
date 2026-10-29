@@ -20,9 +20,9 @@ Native 2× iPhone photo enlargement with local Core ML models, HDR-aware exports
 
 ---
 
-TruongScaler's model choices on this feature branch are **QuickSRNet (Fast)** by default, **EDSR (Balanced)** and **HAT-S (Best)**. Every new job uses native **2×**, with denoise off. Choose an input folder and a separate output folder in Files; saved results retain their model, processing history and frozen original for before/after comparison when reopened. Inference uses trained Core ML models and Apple frameworks, without a remote processing service.
+TruongScaler's model choices are **QuickSRNet (Fast)** by default, **EDSR (Balanced)** and **HAT-S (Best)**. Every new job uses native **2×**, with denoise off. Choose an input folder and a separate output folder in Files; saved results retain their model, processing history and frozen original for before/after comparison when reopened. Inference uses trained Core ML models and Apple frameworks, without a remote processing service.
 
-Build 1008 remains the separate validated two-model release baseline. This branch integrates **three choices and six compiled variants**, with 192 and 256 input shapes for each model. Its HAT-S reference, runtime and application checks are recorded separately in [validation and limits](docs/VALIDATION.md). The tier names describe the intended time/detail tradeoff; HAT-S phone speed, image quality and accelerator placement have not been measured.
+The app bundles **three choices and six compiled variants**, with 192 and 256 input shapes for each model. The maintainer has reported successful phone testing and accepted this version for release. Automated model/reference, simulator and app-bundle checks are recorded in [validation and limits](docs/VALIDATION.md). The tier names describe intended time/detail tradeoffs; controlled per-model phone benchmarks, quality comparisons and accelerator placement have not been measured.
 
 ## Screenshots
 
@@ -73,7 +73,7 @@ Current screenshots show actual production SwiftUI/UIKit screens captured in an 
 - Recoverable Recently Deleted, batch Restore and confirmed permanent deletion for Output photos
 - Bounded processing history and supported EXIF/GPS metadata carried through exports
 
-RAW decoding depends on the installed Apple runtime and camera format. **Real Canon EOS R7 CR3 files have not been exercised**; extension recognition does not establish camera compatibility. Gain-map HDR raster inputs are refused when native decoding returns only their SDR base; linear DNG/TIFF provide separate HDR paths. PNG is SDR-only, and HDR HEIC succeeds only after its encoded pixels pass runtime verification. Phone speed, physical image quality, ANE placement and background scheduling remain unmeasured; see [validation and limits](docs/VALIDATION.md).
+RAW decoding depends on the installed Apple runtime and camera format. **Real Canon EOS R7 CR3 files have not been exercised**; extension recognition does not establish camera compatibility. Gain-map HDR raster inputs are refused when native decoding returns only their SDR base; linear DNG/TIFF provide separate HDR paths. PNG is SDR-only, and HDR HEIC succeeds only after its encoded pixels pass runtime verification. Controlled phone benchmarks, comparative image-quality measurements, ANE placement and background scheduling remain unmeasured; see [validation and limits](docs/VALIDATION.md).
 
 ## Install
 
