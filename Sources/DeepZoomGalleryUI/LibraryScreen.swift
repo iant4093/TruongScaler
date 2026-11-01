@@ -51,6 +51,8 @@ public struct LibraryScreen: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var isViewerPresented = false
+    @State private var viewerIsVisible = false
+    @State private var pendingIncomingViewerRequest: UUID?
     @State private var isProgressDetailsPresented = false
     @State private var isSelecting = false
     @State private var selectedIDs: Set<String> = []
@@ -238,6 +240,20 @@ public struct LibraryScreen: View {
                 }
             }
             .onChange(of: viewModel.gallerySelectionContext) { _, _ in selectedIDs = []; pendingTrash = nil; isSelecting = false }
+            .onChange(of: viewModel.incomingHandoffViewerRequest, initial: true) { _, request in
+                pendingIncomingViewerRequest = request
+                guard request != nil else { return }
+                isFolderSheetPresented = false; isTrashPresented = false
+                isFileImporterPresented = false; isProgressDetailsPresented = false
+                viewModel.isOutputSetupPresented = false
+                pendingTrash = nil
+                viewModel.dismissShare(surface: .library)
+            }
+            .onChange(of: viewModel.isOutputSetupPresented) { _, presented in
+                if presented, pendingIncomingViewerRequest != nil {
+                    viewModel.isOutputSetupPresented = false
+                }
+            }
             .onChange(of: viewModel.selectedCollection) { _, _ in
                 selectedIDs.removeAll()
                 pendingTrash = nil
@@ -256,11 +272,11 @@ public struct LibraryScreen: View {
             }
             #if os(iOS)
             .fullScreenCover(isPresented: $isViewerPresented, onDismiss: { viewModel.viewerDidDismiss() }) {
-                StudioWorkspaceView(viewModel: viewModel)
+                photoViewer
             }
             #else
             .sheet(isPresented: $isViewerPresented, onDismiss: { viewModel.viewerDidDismiss() }) {
-                StudioWorkspaceView(viewModel: viewModel)
+                photoViewer
             }
             #endif
             .sheet(isPresented: $isFolderSheetPresented) {
@@ -293,6 +309,48 @@ public struct LibraryScreen: View {
         }
         .preferredColorScheme(.dark)
         .tint(.white)
+        #if canImport(UIKit)
+        .background {
+            NativeIncomingHandoffViewerPresenter(requestID: viewerIsVisible ? nil : pendingIncomingViewerRequest) { id in
+                guard pendingIncomingViewerRequest == id, viewModel.incomingHandoffViewerRequest == id else { return }
+                isViewerPresented = true
+            }
+        }
+        #else
+        .task(id: pendingIncomingViewerRequest) {
+            await Task.yield()
+            guard !Task.isCancelled, let id = pendingIncomingViewerRequest,
+                  viewModel.incomingHandoffViewerRequest == id else { return }
+            isViewerPresented = true
+        }
+        #endif
+    }
+
+    private var photoViewer: some View {
+        StudioWorkspaceView(viewModel: viewModel)
+            .onAppear {
+                viewerIsVisible = true
+                #if !canImport(UIKit)
+                acknowledgeIncomingViewerIfVisible()
+                #endif
+            }
+            .onDisappear { viewerIsVisible = false }
+            #if canImport(UIKit)
+            .background {
+                NativeIncomingHandoffViewerPresenter(requestID: viewModel.incomingHandoffViewerRequest) { id in
+                    guard viewModel.incomingHandoffViewerRequest == id else { return }
+                    acknowledgeIncomingViewerIfVisible()
+                }
+            }
+            #else
+            .onChange(of: viewModel.incomingHandoffViewerRequest) { _, _ in acknowledgeIncomingViewerIfVisible() }
+            #endif
+    }
+
+    private func acknowledgeIncomingViewerIfVisible() {
+        guard viewerIsVisible, isViewerPresented, let id = viewModel.incomingHandoffViewerRequest else { return }
+        viewModel.acknowledgeIncomingHandoffViewerRequest(id)
+        if pendingIncomingViewerRequest == id { pendingIncomingViewerRequest = nil }
     }
 
     private var selectionActionsBar: some View {

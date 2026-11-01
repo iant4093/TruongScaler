@@ -6,7 +6,7 @@ import MMapCanvas
 import TruongScalerCore
 
 /// Result of decoding a source image into a disk-backed `MMapBuffer`.
-/// Specification: `docs/DEVELOPMENT.md` Section 2.2.
+/// Specification: `README.md`
 public struct DecodedSourceResult: Sendable {
     public let metadata: ImageMetadataPacket
     public let sourceBuffer: MMapBuffer
@@ -37,7 +37,7 @@ public struct DecodedSourceResult: Sendable {
 
 /// Decodes any supported RAW, ProRAW, HDR HEIC, TIFF, PNG, or JPEG image in horizontal strips of 512 rows
 /// directly into a disk-backed `MMapBuffer` in `extendedLinearDisplayP3` (`CIFormat.RGBAh`).
-/// Specification: `docs/DEVELOPMENT.md` Section 2.2.
+/// Specification: `README.md`
 public struct UniversalStripDecoder: Sendable {
     public static let defaultStripHeight: Int = 512
 

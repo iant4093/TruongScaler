@@ -3,7 +3,7 @@ import Foundation
 import ActivityKit
 #endif
 
-/// Dynamic Island & Lock Screen Live Activity attributes (`docs/DEVELOPMENT.md` Section 4.6).
+/// Dynamic Island & Lock Screen Live Activity attributes (`README.md`).
 public struct UpscaleActivityAttributes: Codable, Sendable, Equatable {
     /// Explicit lifecycle phase so the widget can distinguish success, cancellation, failure and
     /// a resumable pause instead of inferring them from a message string.

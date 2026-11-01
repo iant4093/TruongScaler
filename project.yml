@@ -52,6 +52,33 @@ targets:
               - truongscaler
         LSApplicationQueriesSchemes:
           - truongnoiser
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: "TruongScaler photo handoff"
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Owner
+            LSItemContentTypes:
+              - com.iantruong.imagingsuite.handoff.scaler
+        LSSupportsOpeningDocumentsInPlace: false
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.iantruong.imagingsuite.handoff.scaler
+            UTTypeDescription: "TruongScaler photo handoff"
+            UTTypeConformsTo:
+              - public.data
+              - public.content
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - truongscalerhandoff
+              public.mime-type: application/vnd.iantruong.scaler-handoff
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: com.iantruong.imagingsuite.handoff.noiser
+            UTTypeDescription: "TruongNoiser photo handoff"
+            UTTypeConformsTo:
+              - public.data
+              - public.content
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - truongnoiserhandoff
+              public.mime-type: application/vnd.iantruong.noiser-handoff
         NSPhotoLibraryUsageDescription: "TruongScaler requires access to your Photo Library to load full-resolution RAW, ProRAW, HEIC, and JPEG images for super-resolution."
         NSPhotoLibraryAddUsageDescription: "TruongScaler requires permission to save upscaled images to your Photo Library."
         UILaunchScreen: {}

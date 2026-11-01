@@ -242,7 +242,7 @@ public extension LiveActivityControlling {
 /// handle and generation *before* awaiting ActivityKit, so it can never clear an activity started
 /// while it was suspended; an `update` only ever targets the handle current when the call began.
 ///
-/// Specification: `docs/DEVELOPMENT.md`.
+/// Specification: `README.md`.
 @MainActor
 public final class LiveActivityController: LiveActivityControlling {
     private static var didCleanUpAfterColdLaunch = false

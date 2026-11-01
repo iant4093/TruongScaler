@@ -1154,25 +1154,17 @@ final class StudioViewModelLifecycleTests: XCTestCase {
         viewModel.completedArtifacts = artifacts
 
         await viewModel.sendToTruongNoiser()
-        let deepLink = try XCTUnwrap(opener.openedURLs.first)
-
-        // The outgoing manifest targets TruongNoiser, so decode it directly (the inbound consumer
-        // intentionally rejects a manifest whose target is not TruongScaler).
-        let manifestURLs = try FileManager.default.contentsOfDirectory(
-            at: handoffBase,
-            includingPropertiesForKeys: nil
-        ).filter { $0.pathExtension == "json" }
-        let manifestURL = try XCTUnwrap(manifestURLs.first)
-        let payload = try JSONDecoder().decode(
-            SharedSuiteHandoffPayload.self,
-            from: try Data(contentsOf: manifestURL)
-        )
-        XCTAssertTrue(deepLink.absoluteString.contains(payload.handoffID.uuidString))
+        let session = try XCTUnwrap(viewModel.companionHandoffSession)
+        XCTAssertTrue(opener.openedURLs.isEmpty, "Production sends use the native document menu")
+        // Exercise the complete production document, including its copied export bytes, as the
+        // target app would. The Scaler inbound consumer intentionally refuses a Noiser target.
+        let payload = try PortableSuiteHandoff.importDocument(at: session.fileURL,
+            expectedTarget: .truongNoiser, directory: tempDirectory.appendingPathComponent("received"))
         XCTAssertTrue(payload.isDenoised)
         XCTAssertTrue(payload.isUpscaled)
         XCTAssertEqual(payload.upscaleFactor, 4)
         XCTAssertGreaterThan(payload.globalMaxLinearComponent, 1.5, "Final grain-blended HDR peak must be forwarded")
-        XCTAssertTrue(FileManager.default.fileExists(atPath: payload.imageFileURLPath), "The App Group's actual copied handoff survives intermediate cleanup")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: payload.imageFileURLPath), "The receiver's owned image survives intermediate cleanup")
         let privateIntermediates = try FileManager.default.contentsOfDirectory(at: tempDirectory, includingPropertiesForKeys: nil)
             .filter { $0.lastPathComponent.hasPrefix("handoff_") && $0.pathExtension == "dng" }
         XCTAssertTrue(privateIntermediates.isEmpty)

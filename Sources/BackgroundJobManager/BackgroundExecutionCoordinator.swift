@@ -97,7 +97,7 @@ public enum BackgroundJobStartResult: Sendable, Equatable {
 /// * cancellation targets the concrete submitted identifier.
 /// Registering the literal wildcard is rejected by the system even when the plist contains it.
 ///
-/// Generation rules (`docs/DEVELOPMENT.md` §1.2):
+/// Generation rules (`README.md`):
 /// * a delivered system task is adopted only when its concrete identifier equals the current job's
 ///   concrete identifier (and the submitted identifier, when one exists) *and* the job generation
 ///   captured at delivery is still current;
@@ -118,7 +118,7 @@ public enum BackgroundJobStartResult: Sendable, Equatable {
 /// Continued-processing registration is explicitly exempt from the before-launch registration rule
 /// (`BGTaskScheduler.h`), so registering from the SwiftUI app entry point is valid.
 ///
-/// Specification: `docs/DEVELOPMENT.md`.
+/// Specification: `README.md`.
 public actor BackgroundExecutionCoordinator {
     /// Wildcard identifier used for `BGTaskSchedulerPermittedIdentifiers` and launch registration.
     public static let continuedProcessingTaskIdentifier = "com.iantruong.truongscaler.continued-processing.*"

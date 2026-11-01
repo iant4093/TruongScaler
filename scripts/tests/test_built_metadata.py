@@ -27,6 +27,14 @@ class BuiltMetadataTests(unittest.TestCase):
             BGTaskSchedulerPermittedIdentifiers=["com.iantruong.truongscaler.continued-processing.*"],
             CFBundleURLTypes=[dict(CFBundleURLSchemes=["truongscaler"])], LSApplicationQueriesSchemes=["truongnoiser"],
             UISupportedInterfaceOrientations=["UIInterfaceOrientationPortrait", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"])
+        info.update(
+            LSSupportsOpeningDocumentsInPlace=False,
+            CFBundleDocumentTypes=[dict(CFBundleTypeRole="Viewer", LSHandlerRank="Owner",
+                LSItemContentTypes=["com.iantruong.imagingsuite.handoff.scaler"])],
+            UTExportedTypeDeclarations=[dict(UTTypeIdentifier="com.iantruong.imagingsuite.handoff.scaler",
+                UTTypeTagSpecification={"public.filename-extension": ["truongscalerhandoff"]})],
+            UTImportedTypeDeclarations=[dict(UTTypeIdentifier="com.iantruong.imagingsuite.handoff.noiser",
+                UTTypeTagSpecification={"public.filename-extension": ["truongnoiserhandoff"]})])
         (self.app / "Info.plist").write_bytes(plistlib.dumps(info))
         (self.app / "TruongScalerApp").write_bytes(b"layout-fixture-executable")
         (self.app / "Assets.car").write_bytes(b"layout-fixture-catalog")
@@ -67,6 +75,24 @@ class BuiltMetadataTests(unittest.TestCase):
     def testCompleteLayoutPasses(self):
         result = self.audit()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def testMissingPortableDocumentDeclarationsAreRefused(self):
+        path = self.app / "Info.plist"
+        original = plistlib.loads(path.read_bytes())
+        for key in ("CFBundleDocumentTypes", "UTExportedTypeDeclarations", "UTImportedTypeDeclarations"):
+            with self.subTest(key=key):
+                info = dict(original)
+                del info[key]
+                path.write_bytes(plistlib.dumps(info))
+                self.assertNotEqual(self.audit().returncode, 0)
+        path.write_bytes(plistlib.dumps(original))
+
+    def testPortableDocumentOpeningInPlaceIsRefused(self):
+        path = self.app / "Info.plist"
+        info = plistlib.loads(path.read_bytes())
+        info["LSSupportsOpeningDocumentsInPlace"] = True
+        path.write_bytes(plistlib.dumps(info))
+        self.assertNotEqual(self.audit().returncode, 0)
 
     def testMissingMainExecutableIsRefused(self):
         (self.app / "TruongScalerApp").unlink()

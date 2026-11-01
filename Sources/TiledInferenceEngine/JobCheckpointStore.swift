@@ -18,7 +18,7 @@ enum CheckpointDurabilityFaultPoint: Sendable, Equatable {
 }
 
 /// Atomically + durably persists `JobCheckpointState` to `workingDirectory / "checkpoint_<jobID>.json"`.
-/// Specification: `docs/DEVELOPMENT.md` Section 2.
+/// Specification: `README.md`
 public actor JobCheckpointStore {
     public let workingDirectory: URL
     /// Test-only one-shot durability fault. Internal so production code can never inject it.

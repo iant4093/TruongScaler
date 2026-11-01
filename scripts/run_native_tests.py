@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Execute actual iOS package and app-hosted UIKit regressions, without a phone."""
+import argparse
 import json
 import os
 from pathlib import Path
@@ -17,6 +18,12 @@ for directory in (LOGS, RESULTS):
     directory.mkdir(parents=True, exist_ok=True)
 os.chdir(ROOT)
 stages = []
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--suite", action="append", help="Run a named package suite plus hosted UIKit tests; repeat for multiple suites")
+parser.add_argument("--hosted-only", action="store_true", help="Run only the app-hosted UIKit tests")
+options = parser.parse_args()
+if options.hosted_only and options.suite:
+    parser.error("--hosted-only and --suite cannot be combined")
 
 
 def run(label, args, env=None):
@@ -66,6 +73,13 @@ suites = [
     "MetalColorEngineTests", "TiledInferenceEngineTests", "DNGWriterBridgeTests",
     "CoreExportTests", "BackgroundJobManagerTests", "DeepZoomGalleryUITests",
 ]
+if options.hosted_only:
+    suites = []
+elif options.suite:
+    unknown = set(options.suite) - set(suites)
+    if unknown:
+        parser.error("Unknown package suites: " + ", ".join(sorted(unknown)))
+    suites = list(dict.fromkeys(options.suite))
 # Standalone UIKit geometry fixtures still need the sceneless UIWindow initializer,
 # deprecated on iOS 26. App/hosted builds below and distribution builds treat warnings
 # as errors; these package fixtures keep deprecation diagnostics visible in their logs.
@@ -97,29 +111,41 @@ host_build = [
     "CODE_SIGNING_ALLOWED=NO", "SWIFT_STRICT_CONCURRENCY=complete",
     "SWIFT_TREAT_WARNINGS_AS_ERRORS=YES", "GCC_TREAT_WARNINGS_AS_ERRORS=YES",
 ]
+# Inspect the installed companion from the host. iOS27 deprecates canOpenURL; a query
+# is also weaker evidence than the actual Open In menu these integration tests exercise.
+companion = subprocess.run(["xcrun", "simctl", "get_app_container", sim,
+    "com.iantruong.truongnoiser", "app"], capture_output=True, text=True)
+companion_available = False
+if companion.returncode == 0:
+    companion_info = Path(companion.stdout.strip()) / "Info.plist"
+    if companion_info.is_file():
+        declarations = plistlib.loads(companion_info.read_bytes()).get("CFBundleDocumentTypes", [])
+        companion_available = any("com.iantruong.imagingsuite.handoff.noiser" in entry.get("LSItemContentTypes", [])
+            for entry in declarations)
+if os.environ.get("TRUONGSUITE_REQUIRE_COMPANION") == "1" and not companion_available:
+    raise SystemExit("The updated companion must be installed on this Simulator for paired validation.")
+run("hosted-ui-build", host_build + ["build-for-testing"])
+templates = sorted((app_derived / "Build/Products").glob("TruongScalerHostTests_*.xctestrun"))
+if len(templates) != 1:
+    raise SystemExit("Expected one hosted test-run template.")
+configuration = plistlib.loads(templates[0].read_bytes())
+target = configuration.get("TruongScalerHostTests")
+if not isinstance(target, dict):
+    raise SystemExit("The hosted test-run template has no expected target.")
+# XCTest host launches do not inherit arbitrary shell/SIMCTL_CHILD variables.
+host_environment = target.setdefault("EnvironmentVariables", {})
+host_environment["TRUONGSUITE_COMPANION_AVAILABLE"] = "1" if companion_available else "0"
 capture_dir = os.environ.get("TRUONGSCALER_README_SCREENSHOT_DIR")
 if capture_dir:
-    run("hosted-ui-build", host_build + ["build-for-testing"])
-    templates = sorted((app_derived / "Build/Products").glob("TruongScalerHostTests_*.xctestrun"))
-    if len(templates) != 1:
-        raise SystemExit("Expected one hosted test-run template for screenshot capture.")
-    configuration = plistlib.loads(templates[0].read_bytes())
-    target = configuration.get("TruongScalerHostTests")
-    if not isinstance(target, dict):
-        raise SystemExit("The hosted test-run template has no expected target.")
-    # xcodebuild does not forward arbitrary shell or SIMCTL_CHILD variables to its test host.
-    # Put the opt-in value in XCTest's actual launch environment, beside the template so
-    # __TESTROOT__ continues resolving to the built Products directory.
     capture_path = Path(capture_dir).resolve()
-    target.setdefault("EnvironmentVariables", {})["TRUONGSCALER_README_SCREENSHOT_DIR"] = str(capture_path)
-    configured = templates[0].parent / "README-Capture.xctestrun"
-    configured.write_bytes(plistlib.dumps(configuration))
-    run("hosted-ui", ["xcodebuild", "-jobs", jobs, "-xctestrun", str(configured),
-        "-destination", "platform=iOS Simulator,id=" + sim, "-resultBundlePath", str(result_bundle),
-        "test-without-building"])
+    host_environment["TRUONGSCALER_README_SCREENSHOT_DIR"] = str(capture_path)
+configured = templates[0].parent / "Local-Validation.xctestrun"
+configured.write_bytes(plistlib.dumps(configuration))
+run("hosted-ui", ["xcodebuild", "-jobs", jobs, "-xctestrun", str(configured),
+    "-destination", "platform=iOS Simulator,id=" + sim, "-resultBundlePath", str(result_bundle),
+    "-collect-test-diagnostics", "never", "test-without-building"])
+if capture_dir:
     for name in ("input-library.png", "processed-viewer.png", "output-library.png", "model-settings.png", "provenance.json"):
         if not (capture_path / name).is_file():
             raise SystemExit("Requested documentation capture did not produce " + name)
-else:
-    run("hosted-ui", host_build + ["-resultBundlePath", str(result_bundle), "test"])
-print("PASS: all iOS package and app-hosted test suites executed.", flush=True)
+print("PASS: " + str(len(suites)) + " selected iOS package suites and app-hosted UIKit tests executed.", flush=True)

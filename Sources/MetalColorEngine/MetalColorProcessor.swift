@@ -4,7 +4,7 @@ import TruongScalerCore
 import MMapCanvas
 
 /// Intermediate per-tile tensors for reversible log tone-mapping and YCbCr decoupling.
-/// Specification: `docs/DEVELOPMENT.md` Section 4.
+/// Specification: `README.md`
 public struct PreparedTileTensors: @unchecked Sendable {
     public let tileSize: Int
     public let logConstantK: Float
@@ -39,7 +39,7 @@ public struct PreparedTileTensors: @unchecked Sendable {
 
 /// Metal compute + CPU SIMD color processor for reversible log tone-mapping, Display P3 YCbCr decoupling,
 /// and 4x4 Catmull-Rom bicubic chroma/alpha upscaling.
-/// Specification: `docs/DEVELOPMENT.md` Sections 2-4.
+/// Specification: `README.md`.
 public final class MetalColorProcessor: @unchecked Sendable {
     public let device: MTLDevice?
     public let commandQueue: MTLCommandQueue?
@@ -538,7 +538,7 @@ public final class MetalColorProcessor: @unchecked Sendable {
     }
 
     /// Bicubic-upsamples the Cb/Cr chroma planes by the given scale factor using the exact 4x4
-    /// Catmull-Rom (a = -0.5) separable kernel from `docs/DEVELOPMENT.md` Section 2.3.
+    /// Catmull-Rom (a = -0.5) separable kernel from `README.md`
     /// - Returns: planar `[sourceWidth * S, sourceHeight * S]` Cb and Cr buffers (row-major).
     public func upsampleChromaToOutput(
         cbPlane: [Float],

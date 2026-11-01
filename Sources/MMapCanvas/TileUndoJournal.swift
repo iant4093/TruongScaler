@@ -4,7 +4,7 @@ import CryptoKit
 import TruongScalerCore
 
 /// Exact destination rectangle of one upscaled tile, clipped to the output canvas.
-/// Specification: `docs/DEVELOPMENT.md` Section 1.3.
+/// Specification: `README.md`
 public struct TileJournalRect: Codable, Sendable, Equatable {
     public static let bytesPerPixel = 8 // 4 x Float16 (R, G, B, A)
 
@@ -64,7 +64,7 @@ public struct TileJournalRect: Codable, Sendable, Equatable {
 
 /// Durable per-tile undo manifest. `sha256` is the lowercase CryptoKit SHA-256 hex digest of the
 /// `.undo` bytes. One manifest + one `.undo` file form a single tile transaction journal.
-/// Specification: `docs/DEVELOPMENT.md` Section 1.3.
+/// Specification: `README.md`
 public struct TileJournalManifest: Codable, Sendable, Equatable {
     public static let currentVersion = 1
 
@@ -155,7 +155,7 @@ public typealias TileJournalFaultHandler = (TileJournalRecoveryFaultPoint) throw
 ///
 /// No full-image copy is ever held in RAM: publishing streams rows from the mmap canvas into the
 /// undo file while hashing, and restoring streams them back after validating the digest.
-/// Specification: `docs/DEVELOPMENT.md` Section 1.3.
+/// Specification: `README.md`
 public struct TileUndoJournal: Sendable {
     /// Generous upper bound for the manifest JSON so disk-space checks can reserve journal space.
     public static let maximumManifestBytes = 4 * 1024

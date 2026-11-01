@@ -2,7 +2,7 @@ import Foundation
 import TruongScalerCore
 
 /// Writes an upscaled tile into `outputBuffer` using idempotent causal top-left raised-cosine ramp feathering.
-/// Specification: `docs/DEVELOPMENT.md` Section 1.2.
+/// Specification: `README.md`
 ///
 /// All coordinate/stride arithmetic is overflow-checked. Untrusted tile geometry (a corrupt checkpoint
 /// or tile plan) is skipped instead of trapping, and the weight tables are bounded by the visible

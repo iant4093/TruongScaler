@@ -199,7 +199,7 @@ public struct LinearDNGTIFFDecodeResult: Sendable {
 }
 
 /// Pure-Swift, little-endian TIFF/IFD strip reader for rendered suite LinearRaw DNGs
-/// (`docs/DEVELOPMENT.md`).
+/// (`README.md`).
 ///
 /// This is deliberately independent of the C++ writer: it parses the file bytes directly and
 /// streams uncompressed 16-bit chunky RGB strips into a destination `MMapBuffer` as

@@ -5,7 +5,7 @@ import Foundation
 import os
 #endif
 
-/// Device memory tier (`docs/DEVELOPMENT.md` Section 4.2).
+/// Device memory tier (`README.md`).
 public enum DeviceTier: String, Codable, Sendable, Equatable {
     /// >= 2.5 GB available memory -> 256×256 input tiles; overlap depends on the recorded model.
     case tierA_HighMemory
@@ -13,7 +13,7 @@ public enum DeviceTier: String, Codable, Sendable, Equatable {
     case tierB_ConstrainedMemory
 }
 
-/// Tile dimensions and overlap configuration for TruongScaler (`docs/DEVELOPMENT.md` Section 4.2).
+/// Tile dimensions and overlap configuration for TruongScaler (`README.md`).
 public struct TileConfiguration: Codable, Sendable, Equatable {
     public let tier: DeviceTier
     public let inputTileSize: Int
@@ -46,7 +46,7 @@ public struct TileConfiguration: Codable, Sendable, Equatable {
     }
 }
 
-/// Hardware memory and disk telemetry (`docs/DEVELOPMENT.md` Section 4.2).
+/// Hardware memory and disk telemetry (`README.md`).
 public struct HardwareTelemetry: Sendable {
     /// 2.5 GiB (2,684,354,560 bytes)
     public static let tierAThresholdBytes: UInt64 = 2_684_354_560
@@ -54,7 +54,7 @@ public struct HardwareTelemetry: Sendable {
     public static let diskSafetyMarginBytes: Int64 = 1_610_612_736
 
     public static func currentAvailableMemoryBytes() -> UInt64 {
-        // Verified against docs/DEVELOPMENT.md Section 4.2: prefer the platform
+        // Verified against README.md: prefer the platform
         // os_proc_available_memory() query on iOS/tvOS/watchOS and fall back to half of physical
         // memory on macOS host unit tests.
         #if os(iOS) || os(tvOS) || os(watchOS)

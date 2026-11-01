@@ -5,6 +5,8 @@
 	};
 	objectVersion = 77;
 	objects = {
+        31A60FAE294448E79C4F92CE = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/TruongScalerHostTests/CompanionHandoffLifecycleNativeTests.swift; sourceTree = SOURCE_ROOT; };
+        1EC74E8D43608A8676C68646 = {isa = PBXBuildFile; fileRef = 31A60FAE294448E79C4F92CE; };
         A20261026010000000000001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/TruongScalerHostTests/NativeGallerySelectionTests.swift; sourceTree = SOURCE_ROOT; };
         A20261026020000000000001 = {isa = PBXBuildFile; fileRef = A20261026010000000000001; };
         A20261026010000000000002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/TruongScalerHostTests/InteractivePagingNativeTests.swift; sourceTree = SOURCE_ROOT; };
@@ -15,7 +17,7 @@
         A202610260000000000000002 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TruongScalerHostTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
         A202610260000000000000003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/TruongScalerHostTests/NativeSharePresentationTests.swift; sourceTree = SOURCE_ROOT; };
         A202610260000000000000004 = {isa = PBXBuildFile; fileRef = A202610260000000000000003; };
-        A202610260000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A20261026020000000000002, A20261026020000000000001, A202610260000000000000004,); runOnlyForDeploymentPostprocessing = 0; };
+        A202610260000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (1EC74E8D43608A8676C68646, A20261026020000000000002, A20261026020000000000001, A202610260000000000000004,); runOnlyForDeploymentPostprocessing = 0; };
         A202610260000000000000006 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
         A202610260000000000000009 = {isa = XCConfigurationList; buildConfigurations = (A20261026000000000000000A, A20261026000000000000000B,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Debug; };
         A20261026000000000000000C = {isa = PBXTargetDependency; target = B128A2455CB90CDF74C87BE9; targetProxy = A20261026000000000000000D; };

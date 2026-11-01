@@ -1,7 +1,7 @@
 import Foundation
 import TruongScalerCore
 
-/// Descriptor for a single row-major tile (`docs/DEVELOPMENT.md` Section 1.1).
+/// Descriptor for a single row-major tile (`README.md`).
 public struct TileDescriptor: Codable, Sendable, Equatable, Identifiable {
     public let tileIndex: Int
     public let row: Int
@@ -44,7 +44,7 @@ public struct TileDescriptor: Codable, Sendable, Equatable, Identifiable {
     }
 }
 
-/// Complete row-major tile grid plan (`docs/DEVELOPMENT.md` Section 1.1).
+/// Complete row-major tile grid plan (`README.md`).
 public struct TileGridPlan: Codable, Sendable, Equatable {
     public let sourceWidth: Int
     public let sourceHeight: Int
@@ -82,7 +82,7 @@ public struct TileGridPlan: Codable, Sendable, Equatable {
 }
 
 /// Partitions any source canvas into fixed-size `T x T` input tiles in row-major order.
-/// Specification: `docs/DEVELOPMENT.md` Section 1.2.
+/// Specification: `README.md`
 public struct TileGridPlanner: Sendable {
     public static func computeAxisOrigins(length: Int, tileSize: Int, stride: Int) -> [Int] {
         guard length > tileSize else { return [0] }

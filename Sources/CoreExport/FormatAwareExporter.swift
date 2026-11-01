@@ -13,7 +13,7 @@ import DNGWriterBridge
 /// into the target file container (`.linearDNG16Bit`, `.tiff16BitLZW`, `.heic10BitHDR`, `.png16Bit`, `.jpeg95`)
 /// without allocating a full-image copy in RAM.
 ///
-/// Per-format dynamic-range contract (`docs/DEVELOPMENT.md`, implementation contract §5):
+/// Per-format dynamic-range contract (`README.md`, implementation contract):
 /// * **Linear DNG** — SDR: quantized 16-bit LinearRaw samples. HDR: absolute Float16 bit patterns
 ///   with DNG 1.7 / ColorimetricReference 2 / ProfileDynamicRange (H = final component peak).
 /// * **16-bit LZW TIFF** — lossless Float16 extended-linear Display P3 (`> 1.0` and alpha survive).

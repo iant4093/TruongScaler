@@ -144,6 +144,12 @@ public struct StudioWorkspaceView: View {
             if !stopping { chromeVisible = true }
         }
         .onChange(of: viewModel.sourceURL) { _, _ in chromeVisible = true; pendingTrash = nil }
+        .onChange(of: viewModel.incomingHandoffViewerRequest, initial: true) { _, request in
+            guard request != nil else { return }
+            isInspectorPresented = false; isOptionsSheetPresented = false
+            isProgressDetailsPresented = false; confirmingHandoff = false; pendingTrash = nil
+            viewModel.dismissShare(surface: .viewer)
+        }
         #if os(iOS)
         .toolbar(.hidden, for: .navigationBar)
         #endif
@@ -227,8 +233,15 @@ public struct StudioWorkspaceView: View {
                 } label: {
                     ViewerGlassIcon(symbol: "arrow.up.forward.app")
                 }
-                .disabled(viewModel.isProcessing || viewModel.metadata == nil)
-                .accessibilityLabel("Send to TruongNoiser")
+                .disabled(viewModel.isProcessing || viewModel.metadata == nil || viewModel.isPreparingCompanionHandoff || viewModel.companionHandoffSession != nil)
+                .accessibilityLabel("Open in TruongNoiser")
+                #if canImport(UIKit)
+                .background {
+                    NativeCompanionHandoffPresenter(session: viewModel.companionHandoffSession) { id, unavailable in
+                        viewModel.companionHandoffDidFinish(sessionID: id, unavailable: unavailable)
+                    }
+                }
+                #endif
 
                 Button {
                     viewModel.stepPhoto(1)

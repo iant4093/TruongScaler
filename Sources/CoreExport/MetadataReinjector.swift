@@ -5,7 +5,7 @@ import TruongScalerCore
 
 /// Reconstructs the complete `ImageIO` property dictionary from `ImageMetadataPacket`
 /// and updates dimensions, orientation, and `ImagingSuite` pipeline tags.
-/// Specification: `docs/DEVELOPMENT.md` Section 2.1.
+/// Specification: `README.md`
 public struct MetadataReinjector: Sendable {
     /// Canonical software attribution written to the `{TIFF}` dictionary on every export.
     /// Pipeline flags carry machine-readable processing history.

@@ -230,9 +230,8 @@ struct TiledExecutorPipelineAdapter: StudioPipelineExecuting {
     }
 }
 
-/// App Group handoff seam. Production passes `overrideBaseDirectory: nil` so a missing App Group is
-/// the actionable `ScalerError.appGroupUnavailable`; tests may supply a temporary group directory to
-/// validate the real manifest/byte-copy path.
+/// Legacy App Group messages remain readable. Production outgoing transfers use self-contained
+/// OS-mediated documents, which do not depend on the two apps sharing signing capabilities.
 protocol StudioHandoffManaging: Sendable {
     func consumeIncomingHandoff(from deepLinkURL: URL) async throws -> SharedSuiteHandoffPayload
     func createHandoffPackage(
@@ -244,6 +243,12 @@ protocol StudioHandoffManaging: Sendable {
         upscaleFactor: Int?,
         globalMaxLinearComponent: Float
     ) async throws -> (payload: SharedSuiteHandoffPayload, deepLinkURL: URL)
+    func prepareOutgoingHandoff(
+        exportedImageURL: URL, originalFileName: String, isDenoised: Bool, isUpscaled: Bool,
+        globalMaxLuminance: Float, upscaleFactor: Int?, globalMaxLinearComponent: Float,
+        isDenoisedByNoiser: Bool?, processingHistory: ImageProcessingHistory?, expectedImageSHA256: String?
+    ) async throws -> PreparedSuiteHandoff
+    func retireUnconsumedHandoff(_ payload: SharedSuiteHandoffPayload) async
 }
 
 struct AppGroupHandoffManagerSeam: StudioHandoffManaging {
@@ -256,10 +261,57 @@ struct AppGroupHandoffManagerSeam: StudioHandoffManaging {
 
     func consumeIncomingHandoff(from deepLinkURL: URL) async throws -> SharedSuiteHandoffPayload {
         try await owner.run {
-            try AppGroupHandoffManager.consumeIncomingHandoff(
-                from: deepLinkURL,
-                overrideBaseDirectory: overrideBaseDirectory
-            )
+            if deepLinkURL.isFileURL {
+                let payload = try PortableSuiteHandoff.importDocument(at: deepLinkURL, expectedTarget: .truongScaler,
+                    directory: importedDocumentsDirectory())
+                if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                    PortableSuiteHandoff.retireOwnedInboxCopy(deepLinkURL, expectedTarget: .truongScaler, documentsDirectory: documents)
+                }
+                return payload
+            }
+            return try AppGroupHandoffManager.consumeIncomingHandoff(
+                from: deepLinkURL, overrideBaseDirectory: overrideBaseDirectory)
+        }
+    }
+
+    private func importedDocumentsDirectory() throws -> URL {
+        if let overrideBaseDirectory { return overrideBaseDirectory.appendingPathComponent("ImportedDocuments", isDirectory: true) }
+        guard let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        return root.appendingPathComponent("TruongScaler/ImportedHandoffs", isDirectory: true)
+    }
+
+    func prepareOutgoingHandoff(
+        exportedImageURL: URL, originalFileName: String, isDenoised: Bool, isUpscaled: Bool,
+        globalMaxLuminance: Float, upscaleFactor: Int?, globalMaxLinearComponent: Float,
+        isDenoisedByNoiser: Bool?, processingHistory: ImageProcessingHistory?, expectedImageSHA256: String?
+    ) async throws -> PreparedSuiteHandoff {
+        try await owner.run {
+            let base = overrideBaseDirectory ?? FileManager.default.temporaryDirectory
+                .appendingPathComponent("TruongScaler-OutgoingHandoffs", isDirectory: true)
+            PortableSuiteHandoff.retireAbandonedPreparedDocuments(in: base)
+            // Reused saved bytes retain their encoded HDR/SDR interpretation. Do not attach
+            // the working HDR canvas's headroom to a saved SDR PNG/JPEG or a different encoding.
+            let savedMetadata = try expectedImageSHA256.map { _ in try MetadataExtractor.extractMetadata(from: exportedImageURL) }
+            // These two saved-output formats are SDR in our exporter. Identify the encoded
+            // container, not its filename, and ignore inherited HDR tags on those bytes.
+            let savedIsSDR = savedMetadata.map {
+                $0.utTypeIdentifier == UTType.jpeg.identifier || $0.utTypeIdentifier == UTType.png.identifier
+            } ?? false
+            let headroom = savedIsSDR ? 1 : max(1, savedMetadata?.linearHeadroomScale ?? globalMaxLinearComponent)
+            return .document(try PortableSuiteHandoff.createDocument(exportedImageURL: exportedImageURL,
+                originalFileName: originalFileName, sourceApp: .truongScaler, targetApp: .truongNoiser,
+                isDenoised: isDenoised, isUpscaled: isUpscaled, globalMaxLuminance: min(globalMaxLuminance, headroom),
+                upscaleFactor: upscaleFactor, globalMaxLinearComponent: headroom, directory: base,
+                isDenoisedByNoiser: isDenoisedByNoiser, processingHistory: processingHistory,
+                expectedImageSHA256: expectedImageSHA256))
+        }
+    }
+
+    func retireUnconsumedHandoff(_ payload: SharedSuiteHandoffPayload) async {
+        try? await owner.run {
+            PortableSuiteHandoff.retireUnconsumedImport(payload, directory: try importedDocumentsDirectory())
         }
     }
 
@@ -292,16 +344,20 @@ struct AppGroupHandoffManagerSeam: StudioHandoffManaging {
 /// Outgoing deep-link launch seam (UIApplication on iOS; test double captures launches).
 protocol ExternalApplicationOpening: Sendable {
     func open(_ url: URL) async
+    func openWithResult(_ url: URL) async -> Bool
 }
 
 struct SystemExternalApplicationOpener: ExternalApplicationOpening {
-    func open(_ url: URL) async {
+    func open(_ url: URL) async { _ = await openWithResult(url) }
+    func openWithResult(_ url: URL) async -> Bool {
         #if canImport(UIKit) && os(iOS)
-        await MainActor.run {
-            UIApplication.shared.open(url)
+        return await withCheckedContinuation { continuation in
+            Task { @MainActor in
+                UIApplication.shared.open(url, options: [:]) { continuation.resume(returning: $0) }
+            }
         }
         #else
-        _ = url
+        return false
         #endif
     }
 }
@@ -310,7 +366,7 @@ struct SystemExternalApplicationOpener: ExternalApplicationOpening {
 
 /// Owns every asynchronous studio operation until it actually finishes or drains.
 ///
-/// Lifetime contract (`docs/DEVELOPMENT.md` §3):
+/// Lifetime contract (`README.md`):
 /// * ingest/execution/export/library-scan/reset each have an explicit owner and generation; a newer
 ///   operation invalidates publications and cleanup of older ones instead of racing them;
 /// * every off-main operation holds its own security-scope grant; a replaced session/folder grant is
@@ -464,6 +520,32 @@ public final class StudioViewModel {
     /// not reached the stable boundary yet. New runs are refused while this is true.
     public private(set) var isStopping: Bool = false
     public var exportedShareURLs: [URL] = []
+    public private(set) var companionHandoffSession: CompanionHandoffSession?
+    public private(set) var isPreparingCompanionHandoff = false
+    private var companionHandoffGeneration: UInt64 = 0
+    public private(set) var incomingHandoffViewerRequest: UUID?
+
+    public func companionHandoffDidFinish(sessionID: UUID, unavailable: Bool) {
+        guard let session = companionHandoffSession, session.id == sessionID else { return }
+        companionHandoffSession = nil
+        if unavailable {
+            errorMessage = "Install or update \(session.targetApp.rawValue), then try Open in \(session.targetApp.rawValue) again."
+            Diagnostics.shared.record(category: .app, level: .warning, code: "handoff.companion.unavailable",
+                message: "No installed app accepts the companion document", fields: ["target": session.targetApp.rawValue])
+        }
+    }
+
+    public func acknowledgeIncomingHandoffViewerRequest(_ id: UUID) {
+        if incomingHandoffViewerRequest == id { incomingHandoffViewerRequest = nil }
+    }
+
+    private func invalidatePendingCompanionHandoff() {
+        companionHandoffGeneration &+= 1
+        // UIKit retains an accepted send independently until didEndSendingToApplication. Clearing
+        // the view-model request cancels only an unpresented/menu selection for the old viewer.
+        companionHandoffSession = nil
+    }
+
     public private(set) var shareSession: PhotoShareSession?
     public private(set) var isPreparingShare = false
     private let sharePreparer: any StudioPhotoSharePreparing
@@ -471,6 +553,8 @@ public final class StudioViewModel {
     private var dismissedShareSessions: [PhotoShareSession] = []
 
     public func viewerDidDismiss() {
+        invalidatePendingCompanionHandoff()
+        supersedeIncomingHandoffConsumptions()
         shareRequestGeneration &+= 1
         shareDidDisappear(surface: .viewer)
     }
@@ -1605,6 +1689,7 @@ public final class StudioViewModel {
     /// owns this generation can be superseded deterministically by a newer selection/reset/handoff.
     @discardableResult
     private func reserveIngestGeneration() -> UInt64 {
+        invalidatePendingCompanionHandoff()
         sessionGeneration &+= 1
         jobGeneration &+= 1
         stopRequestedForJobGeneration = nil
@@ -1838,8 +1923,8 @@ public final class StudioViewModel {
             isUpscaled: payload.isUpscaled,
             upscaleFactor: payload.upscaleFactor,
             linearHeadroomScale: payload.globalMaxLinearComponent,
-            denoisedByNoiser: payload.sourceApp == .truongNoiser ? payload.isDenoised : nil
-        )
+            denoisedByNoiser: payload.isDenoisedByNoiser
+        ).withPipelineState(processingHistory: payload.processingHistory)
     }
 
     // MARK: - Upscale Execution & Batch Processing
@@ -2744,14 +2829,36 @@ public final class StudioViewModel {
     /// never launch against a newer session.
     public func sendToTruongNoiser() async {
         guard let sourceURL else { return }
+        guard !isPreparingCompanionHandoff, companionHandoffSession == nil else { return }
+        isPreparingCompanionHandoff = true
+        defer { isPreparingCompanionHandoff = false }
+        let handoffGeneration = companionHandoffGeneration
         let sessionSnapshot = sessionGeneration
         let artifactGeneration = completedArtifactsGeneration
         let artifacts = completedArtifacts
         let metadataSnapshot = metadata
         let sourceSessionSnapshot = sourceSession
+        let forwardedMetadata = artifacts.map { FormatAwareExporter.processedMetadata(artifacts: $0) } ?? metadataSnapshot
         let fallbackFactor = derivedScaleFactor?.rawValue
+        // A published output already contains this exact frozen recipe. Reuse those bytes,
+        // holding its selected-folder/file grants and verifying the recorded SHA during streaming.
+        let savedResult: (record: ProcessedPhotoRecord, selection: ScopeSession, url: URL)? = {
+            guard let record = publishedCurrentResult, let selection = resultSelection else { return nil }
+            if let artifacts {
+                guard record.id == artifacts.checkpoint.jobID,
+                      record.modelRawValue == artifacts.checkpoint.config.backbone.rawValue,
+                      record.outputWidth == artifacts.outputBuffer.width, record.outputHeight == artifacts.outputBuffer.height,
+                      record.grainAmount == artifacts.checkpoint.config.naturalGrainAmount else { return nil }
+            }
+            return (record, selection, selection.url.appendingPathComponent(record.outputRelativePath))
+        }()
+        func handoffContextIsCurrent() -> Bool {
+            handoffGeneration == companionHandoffGeneration && !Task.isCancelled
+                && sessionSnapshot == sessionGeneration && artifactGeneration == completedArtifactsGeneration
+                && sourceURL == self.sourceURL && (savedResult.map { resultSelection === $0.selection } ?? true)
+        }
         let tempDNG = workingDirectory.appendingPathComponent("handoff_\(UUID().uuidString).dng")
-        // The App Group handoff owns its byte copy after staging drains. This unique private
+        // The prepared document owns its byte copy after staging drains. This unique private
         // intermediate belongs only to this send, including partial-export/staging failures.
         // Never remove exportURL here: forwarding can use the human's existing source directly.
         defer { try? FileManager.default.removeItem(at: tempDNG) }
@@ -2770,7 +2877,16 @@ public final class StudioViewModel {
         // Each staging operation holds its own source grant for the whole await chain.
         sourceSessionSnapshot?.activeOperations += 1
         let sourceGrant = scopeProvider.openGrant(for: sourceURL)
+        savedResult?.selection.activeOperations += 1
+        let savedFolderGrant = savedResult.map { scopeProvider.openGrant(for: $0.selection.url) }
+        let savedFileGrant = savedResult.map { scopeProvider.openGrant(for: $0.url) }
+        var sourceGrantsDrained = false
         func drainSourceGrant() {
+            guard !sourceGrantsDrained else { return }
+            sourceGrantsDrained = true
+            savedFolderGrant?.release(); savedFileGrant?.release()
+            savedResult?.selection.activeOperations -= 1
+            savedResult?.selection.releaseIfDrained()
             sourceGrant.release()
             sourceSessionSnapshot?.activeOperations -= 1
             sourceSessionSnapshot?.releaseIfDrained()
@@ -2778,7 +2894,7 @@ public final class StudioViewModel {
 
         do {
             let exportResult: ExportResult?
-            if let artifacts {
+            if savedResult == nil, let artifacts {
                 let grain = artifacts.checkpoint.config.naturalGrainAmount
                 exportResult = try await exporter.exportDetailed(
                     artifacts: artifacts,
@@ -2790,8 +2906,8 @@ public final class StudioViewModel {
                 exportResult = nil
             }
 
-            let exportURL = exportResult?.url ?? sourceURL
-            let calculatedFactor = exportResult?.actualScaleFactor ?? forwardedFactor
+            let exportURL = savedResult?.url ?? exportResult?.url ?? sourceURL
+            let calculatedFactor = savedResult?.record.scaleFactor ?? exportResult?.actualScaleFactor ?? forwardedFactor
             let isUpscaled = exportResult != nil ? true : forwardedIsUpscaled
             let headroom = exportResult?.dngHeadroomScale ?? forwardedHeadroom
             let luminance: Float = {
@@ -2801,27 +2917,27 @@ public final class StudioViewModel {
             let originalFileName = sourceURL.lastPathComponent
 
             // Revalidate BEFORE creating the handoff package: never stage a stale artifact/session mix.
-            guard sessionSnapshot == sessionGeneration,
-                  artifactGeneration == completedArtifactsGeneration,
-                  sourceURL == self.sourceURL else {
+            guard handoffContextIsCurrent() else {
                 drainSourceGrant()
                 return
             }
 
-            let handoff = try await handoffManager.createHandoffPackage(
+            let handoff = try await handoffManager.prepareOutgoingHandoff(
                 exportedImageURL: exportURL,
                 originalFileName: originalFileName,
                 isDenoised: isDenoised,
                 isUpscaled: isUpscaled,
                 globalMaxLuminance: luminance,
                 upscaleFactor: calculatedFactor,
-                globalMaxLinearComponent: headroom
+                globalMaxLinearComponent: headroom,
+                isDenoisedByNoiser: forwardedMetadata?.isAlreadyDenoisedByNoiser,
+                processingHistory: forwardedMetadata?.processingHistory,
+                expectedImageSHA256: savedResult?.record.outputSHA256
             )
 
             // Revalidate again before publishing/launching: a newer session must never receive the
             // previous session's export URL or flags.
-            guard sessionSnapshot == sessionGeneration,
-                  artifactGeneration == completedArtifactsGeneration else {
+            guard handoffContextIsCurrent() else {
                 drainSourceGrant()
                 return
             }
@@ -2833,11 +2949,21 @@ public final class StudioViewModel {
                 linearHeadroomScale: headroom
             )
             drainSourceGrant()
-            await externalOpener.open(handoff.deepLinkURL)
+            switch handoff {
+            case .document(let document):
+                companionHandoffSession = CompanionHandoffSession(document: document)
+                Diagnostics.shared.record(category: .app, level: .notice, code: "handoff.outgoing.prepared",
+                    message: "Companion document prepared", fields: ["target": document.payload.targetApp.rawValue,
+                        "transport": "document", "denoisedByNoiser": document.payload.isDenoisedByNoiser.map(String.init) ?? "unknown"])
+                libraryStatusLine = "Choose Open in TruongNoiser to send this photo."
+            case .appGroup(_, let deepLinkURL):
+                let opened = await externalOpener.openWithResult(deepLinkURL)
+                guard handoffContextIsCurrent() else { return }
+                if !opened { errorMessage = "TruongNoiser could not be opened. Install or update it and try again." }
+            }
         } catch {
             drainSourceGrant()
-            guard sessionSnapshot == sessionGeneration,
-                  artifactGeneration == completedArtifactsGeneration else { return }
+            guard handoffContextIsCurrent() else { return }
             if error is CancellationError { return }
             Diagnostics.shared.recordError(
                 error,
@@ -2880,6 +3006,7 @@ public final class StudioViewModel {
     /// Cancels and invalidates every previously accepted incoming handoff. The retained tasks remain
     /// owned until they actually return; their late results fail the identity check.
     private func supersedeIncomingHandoffConsumptions() {
+        incomingHandoffViewerRequest = nil
         handoffIngressGeneration &+= 1
         for task in handoffConsumeTasks.values {
             task.cancel()
@@ -2891,17 +3018,37 @@ public final class StudioViewModel {
         manager: any StudioHandoffManaging,
         ingressGeneration: UInt64
     ) async {
+        let documentGrant = deepLinkURL.isFileURL ? scopeProvider.openGrant(for: deepLinkURL) : nil
+        defer { documentGrant?.release() }
         do {
             let payload = try await manager.consumeIncomingHandoff(from: deepLinkURL)
 
             // Revalidate after the consume await before setting any handoff state.
-            guard ingressGeneration == handoffIngressGeneration, !Task.isCancelled else { return }
+            guard ingressGeneration == handoffIngressGeneration, !Task.isCancelled else {
+                await manager.retireUnconsumedHandoff(payload)
+                return
+            }
 
             // Reserve the ingest identity synchronously so this payload cannot go through a public
             // ingest that would bump the generation and supersede a newer handoff.
             let generation = reserveIngestGeneration()
             let fileURL = URL(fileURLWithPath: payload.imageFileURLPath)
             await enqueueIngest(at: fileURL, sessionGeneration: generation, handoff: payload)
+            guard ingressGeneration == handoffIngressGeneration, generation == sessionGeneration,
+                  sourceURL == fileURL, !Task.isCancelled else { return }
+            guard sourceBuffer != nil else {
+                // A current failed decode never created a processing checkpoint. Retire that
+                // unusable received copy, while keeping all successfully ingested resume sources.
+                await manager.retireUnconsumedHandoff(payload)
+                return
+            }
+            incomingHandoffViewerRequest = UUID()
+            Diagnostics.shared.record(category: .app, level: .notice, code: "handoff.incoming.completed",
+                message: "Companion photo opened", fields: ["sourceApp": payload.sourceApp.rawValue,
+                    "targetApp": payload.targetApp.rawValue, "transport": deepLinkURL.isFileURL ? "document" : "app_group",
+                    "width": "\(sourceBuffer?.width ?? 0)", "height": "\(sourceBuffer?.height ?? 0)",
+                    "denoisedByNoiser": metadata.map { String($0.isAlreadyDenoisedByNoiser) } ?? "unknown",
+                    "historySteps": "\(metadata?.processingHistory?.steps.count ?? 0)"])
         } catch {
             guard ingressGeneration == handoffIngressGeneration else { return }
             if error is CancellationError { return }
@@ -2917,6 +3064,7 @@ public final class StudioViewModel {
 
     public func resetSession() {
         guard resetTask == nil else { return }
+        invalidatePendingCompanionHandoff()
         supersedeIncomingHandoffConsumptions()
         sessionGeneration &+= 1
         let resetGeneration = sessionGeneration

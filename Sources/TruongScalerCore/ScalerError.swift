@@ -1,6 +1,6 @@
 import Foundation
 
-/// Exhaustive domain error enum for TruongScaler & TruongNoiser (`docs/DEVELOPMENT.md` Section 4.1).
+/// Exhaustive domain error enum for TruongScaler & TruongNoiser (`README.md`).
 public enum ScalerError: Error, LocalizedError, Sendable, Equatable {
     case fileNotFound(URL)
     case unsupportedImageFormat(String)

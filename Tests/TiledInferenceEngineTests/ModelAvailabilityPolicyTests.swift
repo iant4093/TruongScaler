@@ -5,7 +5,7 @@ import CoreML
 @testable import TruongScalerCore
 
 /// Regression coverage for the production model-availability policy (contract §8,
-/// `docs/DEVELOPMENT.md` Section 6).
+/// `README.md`).
 ///
 /// This file is intentionally separate from `TiledInferenceEngineTests.swift` (group C ownership).
 /// Tests use the registry's internal search-directory override so a model is deterministically absent

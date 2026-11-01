@@ -147,7 +147,7 @@ public struct PipelineProgressUpdate: Sendable {
     }
 }
 
-/// Artifacts produced upon completing all tiles in Stage 3 (`docs/DEVELOPMENT.md` Section 4.1).
+/// Artifacts produced upon completing all tiles in Stage 3 (`README.md`).
 public struct CompletedPipelineArtifacts: Sendable {
     public let checkpoint: JobCheckpointState
     public let metadata: ImageMetadataPacket
@@ -326,7 +326,7 @@ private struct JobProgressEmitter: Sendable {
 }
 
 /// Coordinates Stage 1 -> Stage 2 -> Stage 3 resumable tiled execution.
-/// Specification: `docs/DEVELOPMENT.md` Section 4.
+/// Specification: `README.md`
 public actor TiledPipelineExecutor {
     /// A pause waiter. `owner == nil` represents the unscoped Stop/test pause; a scoped waiter is
     /// resumed only with the answer for the run that requested it (and is answered `false` as soon as

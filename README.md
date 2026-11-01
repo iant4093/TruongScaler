@@ -13,7 +13,7 @@ Native 2× iPhone photo enlargement with local Core ML models, HDR-aware exports
 ![Swift](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-007AFF?logo=swift&logoColor=white)
 ![iOS](https://img.shields.io/badge/iOS-27%2B-000000?logo=apple&logoColor=white)
-![Dependencies](https://img.shields.io/badge/third_party_runtime_packages-0-34C759)
+![Dependencies](https://img.shields.io/badge/runtime_dependencies-0-34C759)
 [![CI](https://github.com/iant4093/TruongScaler/actions/workflows/ci.yml/badge.svg)](https://github.com/iant4093/TruongScaler/actions/workflows/ci.yml)
 
 </div>
@@ -22,7 +22,9 @@ Native 2× iPhone photo enlargement with local Core ML models, HDR-aware exports
 
 TruongScaler's model choices are **QuickSRNet (Fast)** by default, **EDSR (Balanced)** and **HAT-S (Best)**. Every new job uses native **2×**, with denoise off. Choose an input folder and a separate output folder in Files; saved results retain their model, processing history and frozen original for before/after comparison when reopened. Inference uses trained Core ML models and Apple frameworks, without a remote processing service.
 
-The app bundles **three choices and six compiled variants**, with 192 and 256 input shapes for each model. The maintainer has reported successful phone testing and accepted this version for release. Automated model/reference, simulator and app-bundle checks are recorded in [validation and limits](docs/VALIDATION.md). The tier names describe intended time/detail tradeoffs; controlled per-model phone benchmarks, quality comparisons and accelerator placement have not been measured.
+The app bundles **three choices and six compiled variants**, with 192 and 256 input shapes for each model. The maintainer has reported successful phone use. The tier names describe intended time/detail tradeoffs; controlled per-model phone benchmarks, quality comparisons and accelerator placement have not been measured.
+
+**Open in TruongNoiser** sends a self-contained photo/history document through the native Open In menu. Update both apps for the companion document types. Each receiver verifies and owns its imported copy; this path does not depend on shared App Group signing. Native menu/lifecycle and byte-import tests passed locally; actual transfer between signed apps on a phone remains unmeasured.
 
 ## Screenshots
 
@@ -72,8 +74,9 @@ Current screenshots show actual production SwiftUI/UIKit screens captured in an 
 - Sharing of saved result bytes without another export, plus an explicit Save Original to Photos action
 - Recoverable Recently Deleted, batch Restore and confirmed permanent deletion for Output photos
 - Bounded processing history and supported EXIF/GPS metadata carried through exports
+- Companion photo/history documents with source ownership, saved-output SHA-256 verification and validated native modal lifecycle handling; both updated apps are required
 
-RAW decoding depends on the installed Apple runtime and camera format. **Real Canon EOS R7 CR3 files have not been exercised**; extension recognition does not establish camera compatibility. Gain-map HDR raster inputs are refused when native decoding returns only their SDR base; linear DNG/TIFF provide separate HDR paths. PNG is SDR-only, and HDR HEIC succeeds only after its encoded pixels pass runtime verification. Controlled phone benchmarks, comparative image-quality measurements, ANE placement and background scheduling remain unmeasured; see [validation and limits](docs/VALIDATION.md).
+RAW decoding depends on the installed Apple runtime and camera format. **Real Canon EOS R7 CR3 files have not been exercised**; extension recognition does not establish camera compatibility. Gain-map HDR raster inputs are refused when native decoding returns only their SDR base; linear DNG/TIFF provide separate HDR paths. PNG is SDR-only, and HDR HEIC succeeds only after its encoded pixels pass runtime verification. Controlled phone benchmarks, comparative image-quality measurements, ANE placement and background scheduling remain unmeasured. A Live Activity shows status; it does not establish continued execution by the OS.
 
 ## Install
 
@@ -96,7 +99,7 @@ Use retained folders outside the app's own container if you want them to survive
 | Quality | SwiftLint, Swift 6 strict concurrency, warnings as errors, XCTest, Xcode static analysis; CodeQL for workflows |
 | Delivery | GitHub Actions, unsigned arm64 IPA, SHA-256 checksums, build attestations, external app/widget dSYM |
 
-Models and their license notices ship in the app. Python, PyTorch and conversion dependencies are developer tools only. Conversion and reference-parity details are in [the model guide](docs/13_TRAINED_MODEL_INTEGRATION.md).
+Models and their complete license notices ship in the app under [Models/Notices](Targets/TruongScalerApp/Models/Notices/). Pinned checkpoint/source hashes, per-file asset inventories and reference reports are retained in [model provenance](Targets/TruongScalerApp/Models/Provenance/). Python, PyTorch and conversion dependencies are developer tools only.
 
 ## Build locally
 
@@ -115,7 +118,22 @@ bash scripts/build.sh simulator
 bash scripts/package-ipa.sh
 ```
 
-Local packages appear under `build/ipa/` as `TruongScaler.ipa`, `TruongScaler.dSYM.zip` and `SHA256SUMS`. The packager verifies unsigned bundles, Mach-O device platform, arm64 architecture, matching app/widget crash symbols and ZIP integrity. Release executables are optimized and stripped; dSYM files stay outside the installed app. Builds use two jobs and `build/DerivedData` by default; `TRUONGSCALER_BUILD_JOBS` and `TRUONGSCALER_DERIVED_DATA` override those values. See [development and architecture](docs/DEVELOPMENT.md) for the pipeline and storage/export contracts.
+Local packages appear under `build/ipa/` as `TruongScaler.ipa`, `TruongScaler.dSYM.zip` and `SHA256SUMS`. The packager verifies unsigned bundles, Mach-O device platform, arm64 architecture, matching app/widget crash symbols and ZIP integrity. Release executables are optimized and stripped; dSYM files stay outside the installed app. Builds use two jobs and `build/DerivedData` by default; `TRUONGSCALER_BUILD_JOBS` and `TRUONGSCALER_DERIVED_DATA` override those values. Serialize heavy conversion, inference, build and compression commands. `scripts/run_bounded.py` provides an 8 GiB command-descendant footprint guard, including compressed memory on macOS; CoreSimulator services outside that ancestry are not included.
+
+<details>
+<summary>Model, recovery and export contracts</summary>
+
+New jobs are native 2× with denoise off. QuickSRNet/EDSR use input/overlap pairs 192/16 and 256/24; HAT-S uses a 32-pixel overlap at both sizes. A resume uses its recorded model, geometry and image recipe, rather than the current picker. Unknown or incompatible jobs are refused before saved canvas/journal mutation. Missing weights, incompatible shapes and unsafe predictions are visible errors; resampling substitutes are test-only.
+
+Pinned official FP32 PyTorch references are compared against the compiled models with identical half-rounded inputs, full finite/shape checks, PSNR ≥50 dB and maximum absolute error <0.02 on valid reference cases. Off-domain predictions require safe refusal. Converter/reference entry points live in `ModelConversionTools/`; the canonical [inventory](Targets/TruongScalerApp/Models/Provenance/model-inventory.json), source/checkpoint manifests and reports bind the shipped bytes. Simulator HAT-S uses CPU+NE because the exercised GPU backend is unavailable; this does not establish phone routing or speed.
+
+The pipeline keeps alpha outside the network and restores model luminance into linear Display P3. Each committed tile is journaled before blending, flushed and checkpointed before its journal is removed. Stop can finish an in-flight prediction; the accepted durable frontier cannot regress or start the next batch photo.
+
+Rendered Linear DNG retains absolute half-float HDR, metadata/history and the deployed suite container namespace. Classic TIFF offsets impose a 4 GiB DNG output limit. TIFF preserves HDR/alpha; PNG is SDR-only; JPEG flattens alpha onto black. HDR HEIC is decoded and checked after encoding. Unsupported HDR is refused rather than silently clipped. A saved comparison uses the immediate input archived for that operation; earlier Scaler/Noiser events remain visible in its ordered history.
+
+Companion documents use bounded streamed copies, length/checksum validation, independent grants and durable incoming ownership. Completed saved output is reused byte-for-byte after SHA-256 verification. Source files remain unchanged; an absent historical denoise attribution remains unknown. SDR JPEG/PNG headroom follows the actual encoded container, even if inherited text contains an old HDR marker. Legacy compatible App Group messages remain readable.
+
+</details>
 
 ## Tests
 
@@ -130,7 +148,7 @@ bash scripts/verify-logic.sh
 bash scripts/test.sh native
 ```
 
-The native runner requires an available iPhone 17 Simulator on iOS 27 or later and fails if it cannot find one. It executes the package suites and app-hosted viewer/share tests; it does not replace native execution with a Mac build. Logs, quality outputs and result bundles are written under the ignored `build/` directory. Heavy checks run serially with bounded process-descendant memory. [The validation record](docs/VALIDATION.md) distinguishes historical executed passes from unmeasured device behavior.
+The native runner requires an available iPhone 17 Simulator on iOS 27 or later and fails if it cannot find one. It executes the package suites and app-hosted viewer/share tests; it does not replace native execution with a Mac build. Logs, quality outputs and result bundles are written under the ignored `build/` directory. Heavy checks run serially with bounded process-descendant memory. The last complete local handoff validation passed **472 Mac package cases**, **504 iOS package cases** and **24 app-hosted UIKit cases**, plus 15 metadata/process-supervision fixtures. Optional I/O benchmark and documentation captures are excluded from the normal native run. Final unsigned Debug/Release/simulator app and widget resources were audited separately. These checks do not establish signed phone handoff, actual accelerator placement or real Canon R7 CR3 compatibility.
 
 ## CI and releases
 
@@ -157,7 +175,7 @@ CodeQL analyzes the GitHub Actions workflows; the app is checked by the native c
 ├── project.yml             XcodeGen project definition
 ├── ModelConversionTools/   Pinned converters, official sources and checkpoints
 ├── scripts/                Lint, test, build, validation and packaging commands
-├── docs/                   Maintained guides, validation and screenshot provenance
+├── docs/screenshots/       README images and machine-readable photography provenance
 ├── .github/                CI/release workflow and dependency-update configuration
 ├── .swiftlint.yml          Focused correctness rules
 └── README.md

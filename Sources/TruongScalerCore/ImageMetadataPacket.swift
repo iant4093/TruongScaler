@@ -1,6 +1,6 @@
 import Foundation
 
-/// Classification of the source image container (`docs/DEVELOPMENT.md` Section 4.4).
+/// Classification of the source image container (`README.md`).
 public enum SourceImageCategory: String, Codable, Sendable, Equatable {
     case cameraRAW
     case appleProRAW
@@ -16,7 +16,7 @@ public enum HDRGainMapAuxiliaryType: String, Codable, Sendable, Equatable {
     case isoGainMap
 }
 
-/// Extracted DNG/RAW camera color and white balance parameters (`docs/DEVELOPMENT.md` Section 4.4).
+/// Extracted DNG/RAW camera color and white balance parameters (`README.md`).
 public struct CameraRAWParameters: Codable, Sendable, Equatable {
     public let cameraMake: String?
     public let cameraModel: String?
@@ -48,7 +48,7 @@ public struct CameraRAWParameters: Codable, Sendable, Equatable {
     }
 }
 
-/// Complete extracted source image metadata packet (`docs/DEVELOPMENT.md` Section 4.4).
+/// Complete extracted source image metadata packet (`README.md`).
 ///
 /// The four pipeline/headroom fields are additive. They use a hand-written `Codable`
 /// implementation so checkpoints/manifests written before the repair still decode with
@@ -327,7 +327,7 @@ public struct ImageMetadataPacket: Codable, Sendable, Equatable {
         )
     }
 
-    /// Smart Output Routing (`docs/DEVELOPMENT.md` Section 4.4).
+    /// Smart Output Routing (`README.md`).
     public func resolvedExportFormat(from requested: ExportFormat) -> ExportFormat {
         if requested != .autoMatchSource {
             return requested

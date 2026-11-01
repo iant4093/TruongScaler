@@ -1,6 +1,6 @@
 import Foundation
 
-/// Companion app identifier in the ImagingSuite (`docs/DEVELOPMENT.md` Section 4.5).
+/// Companion app identifier in the ImagingSuite (`README.md`).
 public enum SuiteCompanionApp: String, Codable, Sendable {
     case truongNoiser = "TruongNoiser"
     case truongScaler = "TruongScaler"
@@ -14,7 +14,7 @@ public enum SuiteCompanionApp: String, Codable, Sendable {
 }
 
 /// Byte-copying handoff manifest written into `group.com.iantruong.imagingsuite`
-/// (`docs/DEVELOPMENT.md` Section 4.5).
+/// (`README.md`).
 ///
 /// The staged image is produced with `FileManager.copyItem`; the handoff is **not** zero-copy.
 /// The three additive pipeline fields decode with historic defaults (nil / 1.0) so manifests
@@ -32,6 +32,10 @@ public struct SharedSuiteHandoffPayload: Codable, Sendable, Equatable {
     public let upscaleFactor: Int?
     /// Maximum nonnegative linear RGB component of the processed image (>= globalMaxLuminance).
     public let globalMaxLinearComponent: Float
+    /// Optional legacy fields stay unknown when absent; the sending app is not evidence that it
+    /// performed a denoise operation on an untouched forwarded photo.
+    public let isDenoisedByNoiser: Bool?
+    public let processingHistory: ImageProcessingHistory?
     public let createdAt: Date
 
     public init(
@@ -45,6 +49,8 @@ public struct SharedSuiteHandoffPayload: Codable, Sendable, Equatable {
         globalMaxLuminance: Float,
         upscaleFactor: Int? = nil,
         globalMaxLinearComponent: Float = 1.0,
+        isDenoisedByNoiser: Bool? = nil,
+        processingHistory: ImageProcessingHistory? = nil,
         createdAt: Date = Date()
     ) {
         self.handoffID = handoffID
@@ -59,6 +65,8 @@ public struct SharedSuiteHandoffPayload: Codable, Sendable, Equatable {
         self.globalMaxLinearComponent = globalMaxLinearComponent.isFinite && globalMaxLinearComponent > 0
             ? max(globalMaxLinearComponent, globalMaxLuminance)
             : max(1.0, globalMaxLuminance)
+        self.isDenoisedByNoiser = isDenoisedByNoiser
+        self.processingHistory = processingHistory
         self.createdAt = createdAt
     }
 
@@ -70,7 +78,8 @@ public struct SharedSuiteHandoffPayload: Codable, Sendable, Equatable {
             isUpscaled: isUpscaled,
             upscaleFactor: upscaleFactor,
             linearHeadroomScale: globalMaxLinearComponent,
-            isDenoisedByNoiser: sourceApp == .truongNoiser ? isDenoised : nil
+            isDenoisedByNoiser: isDenoisedByNoiser,
+            processingHistory: processingHistory
         )
     }
 
@@ -86,6 +95,8 @@ public struct SharedSuiteHandoffPayload: Codable, Sendable, Equatable {
         case upscaleFactor
         case globalMaxLinearComponent
         case createdAt
+        case isDenoisedByNoiser
+        case processingHistory
     }
 
     public init(from decoder: Decoder) throws {
@@ -103,6 +114,8 @@ public struct SharedSuiteHandoffPayload: Codable, Sendable, Equatable {
         let component = try container.decodeIfPresent(Float.self, forKey: .globalMaxLinearComponent)
             ?? luminance
         globalMaxLinearComponent = component.isFinite && component > 0 ? max(component, luminance) : max(1.0, luminance)
+        isDenoisedByNoiser = try container.decodeIfPresent(Bool.self, forKey: .isDenoisedByNoiser)
+        processingHistory = try container.decodeIfPresent(ImageProcessingHistory.self, forKey: .processingHistory)
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date(timeIntervalSince1970: 0)
     }
 
@@ -118,12 +131,14 @@ public struct SharedSuiteHandoffPayload: Codable, Sendable, Equatable {
         try container.encode(globalMaxLuminance, forKey: .globalMaxLuminance)
         try container.encodeIfPresent(upscaleFactor, forKey: .upscaleFactor)
         try container.encode(globalMaxLinearComponent, forKey: .globalMaxLinearComponent)
+        try container.encodeIfPresent(isDenoisedByNoiser, forKey: .isDenoisedByNoiser)
+        try container.encodeIfPresent(processingHistory, forKey: .processingHistory)
         try container.encode(createdAt, forKey: .createdAt)
     }
 }
 
 /// Manages cross-app file handoffs via `group.com.iantruong.imagingsuite`
-/// (`docs/DEVELOPMENT.md` Section 4.5).
+/// (`README.md`).
 ///
 /// The staged image is a byte copy (`copyItem`) into the shared `Handoffs` directory; this is
 /// not a zero-copy file handoff. Production always requires the real App Group container:
@@ -247,7 +262,9 @@ public struct AppGroupHandoffManager: Sendable {
         overrideBaseDirectory: URL? = nil
     ) throws -> SharedSuiteHandoffPayload {
         guard let components = URLComponents(url: deepLinkURL, resolvingAgainstBaseURL: false),
+              components.scheme?.lowercased() == SuiteCompanionApp.truongScaler.urlScheme,
               components.host == "handoff",
+              components.queryItems?.filter({ $0.name == "id" }).count == 1,
               let idString = components.queryItems?.first(where: { $0.name == "id" })?.value,
               let handoffID = UUID(uuidString: idString) else {
             throw ScalerError.fileNotFound(deepLinkURL)
@@ -259,8 +276,14 @@ public struct AppGroupHandoffManager: Sendable {
               FileManager.default.fileExists(atPath: manifestURL.path) else {
             throw ScalerError.fileNotFound(manifestURL)
         }
+        _ = try PathSafety.assertContained(manifestURL.resolvingSymlinksInPath(), in: baseDir.resolvingSymlinksInPath())
+        let manifestValues = try manifestURL.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+        guard manifestValues.isRegularFile == true, manifestValues.isSymbolicLink != true,
+              let manifestSize = manifestValues.fileSize, manifestSize > 0,
+              manifestSize <= PortableSuiteHandoff.maximumManifestBytes else { throw ScalerError.fileNotFound(manifestURL) }
         let data = try Data(contentsOf: manifestURL)
         let payload = try JSONDecoder().decode(SharedSuiteHandoffPayload.self, from: data)
+        guard payload.processingHistory.map({ $0.marker != nil }) ?? true else { throw ScalerError.fileNotFound(manifestURL) }
         guard payload.targetApp == .truongScaler else {
             throw ScalerError.unsupportedImageFormat(
                 "Handoff target is \(payload.targetApp.rawValue), not TruongScaler"

@@ -118,8 +118,9 @@ final class TrainedModelBundleTests: XCTestCase {
         }
         let provenanceURL = Self.modelsDirectory.appendingPathComponent("Provenance/checkpoint-sha256.txt")
         XCTAssertTrue(FileManager.default.fileExists(atPath: provenanceURL.path))
-        let readmeURL = Self.modelsDirectory.appendingPathComponent("README-MODELS.md")
-        XCTAssertTrue(FileManager.default.fileExists(atPath: readmeURL.path))
+        let creditsURL = Self.modelsDirectory.appendingPathComponent("Notices/THIRD-PARTY-NOTICES.txt")
+        let credits = try String(contentsOf: creditsURL, encoding: .utf8)
+        for family in ["QuickSRNet", "EDSR", "HAT-S"] { XCTAssertTrue(credits.contains(family)) }
     }
 
     func testHATPinsTheOfficialCheckpointAndCompleteArchitectureSupportManifest() throws {

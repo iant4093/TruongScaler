@@ -1,6 +1,6 @@
 import Foundation
 
-/// Super-resolution scale factor (`docs/DEVELOPMENT.md` Section 4.3).
+/// Super-resolution scale factor (`README.md`).
 public enum ScaleFactor: Int, Codable, CaseIterable, Sendable, Identifiable {
     case x2 = 2
     case x4 = 4
@@ -15,7 +15,7 @@ public enum ScaleFactor: Int, Codable, CaseIterable, Sendable, Identifiable {
     }
 }
 
-/// Primary super-resolution backbone model (`docs/DEVELOPMENT.md` Section 4.3).
+/// Primary super-resolution backbone model (`README.md`).
 public struct BackboneModelKind: RawRepresentable, Codable, CaseIterable, Sendable, Identifiable, Hashable {
     public let rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
@@ -58,7 +58,7 @@ public struct BackboneModelKind: RawRepresentable, Codable, CaseIterable, Sendab
     }
 }
 
-/// Pre-upscale denoising mode (`docs/DEVELOPMENT.md` Section 4.3).
+/// Pre-upscale denoising mode (`README.md`).
 public enum DenoiseMode: String, Codable, CaseIterable, Sendable, Identifiable {
     case auto
     case forceOn
@@ -67,7 +67,7 @@ public enum DenoiseMode: String, Codable, CaseIterable, Sendable, Identifiable {
     public var id: String { rawValue }
 }
 
-/// Target export container format (`docs/DEVELOPMENT.md` Section 4.3).
+/// Target export container format (`README.md`).
 public enum ExportFormat: String, Codable, CaseIterable, Sendable, Identifiable {
     case autoMatchSource
     case linearDNG16Bit
@@ -111,7 +111,7 @@ public struct PipelineSessionState: Codable, Sendable, Equatable {
     }
 }
 
-/// User-configured super-resolution job parameters (`docs/DEVELOPMENT.md` Section 4.3).
+/// User-configured super-resolution job parameters (`README.md`).
 public struct UpscaleJobConfig: Codable, Sendable, Equatable, Identifiable {
     public let id: UUID
     public let sourceImageURL: URL
@@ -145,7 +145,7 @@ public struct UpscaleJobConfig: Codable, Sendable, Equatable, Identifiable {
     }
 }
 
-/// Pipeline execution lifecycle stage (`docs/DEVELOPMENT.md` Section 4.3).
+/// Pipeline execution lifecycle stage (`README.md`).
 public enum JobStage: String, Codable, Sendable, Equatable {
     case idle
     case ingestingAndDecodingStrips
@@ -157,7 +157,7 @@ public enum JobStage: String, Codable, Sendable, Equatable {
     case failed
 }
 
-/// Atomic tile-level checkpoint state persisted to disk (`docs/DEVELOPMENT.md` Section 4.3).
+/// Atomic tile-level checkpoint state persisted to disk (`README.md`).
 public struct JobCheckpointState: Codable, Sendable, Equatable {
     /// Version of the durable per-tile undo-journal transaction protocol (`TileUndoJournal`).
     public static let currentTransactionJournalVersion = 1

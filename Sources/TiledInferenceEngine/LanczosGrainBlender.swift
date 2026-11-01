@@ -4,7 +4,7 @@ import TruongScalerCore
 import MMapCanvas
 
 /// Real-time on-the-fly Accelerate `vImage` Lanczos-3 (`kvImageHighQualityResampling`) ROI scaler & blender.
-/// Specification: `docs/DEVELOPMENT.md` Section 3.
+/// Specification: `README.md`
 public struct LanczosGrainBlender: Sendable {
     /// Renders the requested output canvas region `[outX ..< outX + outWidth, outY ..< outY + outHeight]`
     /// into `destinationRGBA16F` (row stride: `destinationRowBytes`).

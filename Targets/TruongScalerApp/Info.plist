@@ -64,5 +64,68 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>TruongScaler photo handoff</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.iantruong.imagingsuite.handoff.scaler</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<false/>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.iantruong.imagingsuite.handoff.scaler</string>
+			<key>UTTypeDescription</key>
+			<string>TruongScaler photo handoff</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.content</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>truongscalerhandoff</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.iantruong.scaler-handoff</string>
+			</dict>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.iantruong.imagingsuite.handoff.noiser</string>
+			<key>UTTypeDescription</key>
+			<string>TruongNoiser photo handoff</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.content</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>truongnoiserhandoff</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.iantruong.noiser-handoff</string>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

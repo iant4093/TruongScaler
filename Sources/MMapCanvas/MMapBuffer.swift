@@ -4,7 +4,7 @@ import os
 import TruongScalerCore
 
 /// Disk-backed 16-bit half-float (`RGBAh`, 8 bytes/pixel, 64-byte row-aligned) POSIX `mmap` image buffer.
-/// Specification: `docs/DEVELOPMENT.md` Section 1.1.
+/// Specification: `README.md`
 public final class MMapBuffer: @unchecked Sendable {
     public let fileURL: URL
     public let width: Int

@@ -1,5 +1,6 @@
 import XCTest
 import UIKit
+import UniformTypeIdentifiers
 import SwiftUI
 import CoreGraphics
 import ImageIO
@@ -466,5 +467,84 @@ private struct DeletedPreviewFixtureView: View {
     var body: some View {
         DeletedPhotoPreview(entry: fixture.entry, loadThumbnail: { await fixture.read($0) },
             previous: {}, next: {}, close: {})
+    }
+}
+
+
+extension NativeSharePresentationTests {
+    func testBuiltAppDeclaresOnlyItsOwnCompanionDocumentHandler() throws {
+        let own = SuiteCompanionApp.truongScaler
+        let other = SuiteCompanionApp.truongNoiser
+        let declarations = try XCTUnwrap(Bundle.main.object(forInfoDictionaryKey: "CFBundleDocumentTypes") as? [[String: Any]])
+        XCTAssertEqual(declarations.compactMap { $0["LSItemContentTypes"] as? [String] }.flatMap { $0 }, [own.handoffDocumentTypeIdentifier])
+        let exported = try XCTUnwrap(Bundle.main.object(forInfoDictionaryKey: "UTExportedTypeDeclarations") as? [[String: Any]])
+        let imported = try XCTUnwrap(Bundle.main.object(forInfoDictionaryKey: "UTImportedTypeDeclarations") as? [[String: Any]])
+        XCTAssertEqual(exported.compactMap { $0["UTTypeIdentifier"] as? String }, [own.handoffDocumentTypeIdentifier])
+        XCTAssertEqual(imported.compactMap { $0["UTTypeIdentifier"] as? String }, [other.handoffDocumentTypeIdentifier])
+        XCTAssertEqual(UTType(filenameExtension: own.handoffDocumentExtension)?.identifier, own.handoffDocumentTypeIdentifier)
+        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "LSSupportsOpeningDocumentsInPlace") as? Bool, false)
+    }
+
+    func testNativeCompanionOpenInMenuRetainsCopyUntilDismissalWithUpdatedCompanionInstalled() async throws {
+        guard ProcessInfo.processInfo.environment["TRUONGSUITE_COMPANION_AVAILABLE"] == "1" else {
+            throw XCTSkip("Install updated TruongNoiser on the task-owned Simulator before this two-app integration case")
+        }
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("TruongScaler-NativeCompanion-\(UUID())")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let input = directory.appendingPathComponent("native-fixture.png")
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 8, height: 6)).image { context in
+            UIColor.systemGreen.setFill(); context.fill(CGRect(x: 0, y: 0, width: 8, height: 6))
+        }
+        try XCTUnwrap(image.pngData()).write(to: input)
+        var document: PortableSuiteHandoff.Document? = try PortableSuiteHandoff.createDocument(exportedImageURL: input,
+            originalFileName: input.lastPathComponent, sourceApp: .truongScaler, targetApp: .truongNoiser,
+            isDenoised: false, isUpscaled: false, globalMaxLuminance: 1, upscaleFactor: nil,
+            globalMaxLinearComponent: 1, directory: directory.appendingPathComponent("documents"))
+        weak let weakDocument = document
+        var session: CompanionHandoffSession? = CompanionHandoffSession(document: try XCTUnwrap(document))
+        let file = try XCTUnwrap(session?.fileURL), id = try XCTUnwrap(session?.id)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previous = scene.windows.first(where: \.isKeyWindow)
+        let owner = UIViewController(), window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 402, height: 874)
+        window.rootViewController = owner
+        let button = UIButton(type: .system)
+        button.frame = CGRect(x: 275, y: 780, width: 48, height: 48)
+        button.setTitle("Open", for: .normal)
+        owner.view.addSubview(button)
+        let anchor = CompanionHandoffAnchor()
+        owner.addChild(anchor); button.addSubview(anchor.view); anchor.view.frame = button.bounds; anchor.didMove(toParent: owner)
+        window.makeKeyAndVisible(); window.layoutIfNeeded()
+        defer {
+            anchor.tearDown()
+            window.isHidden = true; window.rootViewController = nil; previous?.makeKey()
+        }
+        try await Task.sleep(for: .milliseconds(250))
+        let initialTransfers = CompanionDocumentTransfer.activeTransferCount
+        var finishes: [(UUID, Bool)] = []
+        anchor.update(session: session) { finishes.append(($0, $1)) }
+        document = nil; session = nil
+        try await Task.sleep(for: .milliseconds(800))
+        XCTAssertEqual(CompanionDocumentTransfer.activeTransferCount, initialTransfers + 1,
+            "Updated TruongNoiser must accept its registered document in the actual OS Open In menu")
+        XCTAssertTrue(finishes.isEmpty, "The document must remain owned while the native menu is visible")
+        XCTAssertNotNil(weakDocument)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
+        XCTAssertEqual(anchor.view.superview, button)
+        let capture = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+            _ = window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+        }
+        let attachment = XCTAttachment(image: capture)
+        attachment.name = "TruongScaler-native-companion-open-in-menu"; attachment.lifetime = .keepAlways; add(attachment)
+        anchor.tearDown()
+        try await Task.sleep(for: .milliseconds(400))
+        XCTAssertEqual(finishes.count, 1)
+        XCTAssertEqual(finishes.first?.0, id)
+        XCTAssertEqual(finishes.first?.1, false)
+        XCTAssertEqual(CompanionDocumentTransfer.activeTransferCount, initialTransfers)
+        XCTAssertNil(weakDocument)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: input.path))
     }
 }

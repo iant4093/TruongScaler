@@ -1,0 +1,7 @@
+Trained model credits
+
+- QuickSRNet-Large: Qualcomm AIMET Model Zoo. BSD-3-Clause; see QuickSRNet-LICENSE.txt.
+- HAT-S: XPixelGroup HAT and the authors of Activating More Pixels in Image Super-Resolution Transformer. Apache-2.0; see HAT-S-LICENSE.txt, HAT-S-BasicSR-LICENSE.txt and HAT-S-timm-LICENSE.txt.
+- EDSR-baseline: official EDSR-PyTorch implementation by Sanghyun Son and the authors of Enhanced Deep Residual Networks for Single Image Super-Resolution. MIT; see EDSR-LICENSE.txt.
+
+Exact repositories, revisions, checkpoint URLs and SHA-256 digests are in Models/Provenance/model-inventory.json. Original vendored architecture files are unmodified. EDSR inputs/outputs are adapted to its official RGB range. Core ML graph conversion changes representation and precision as recorded in the model inventory and parity reports.

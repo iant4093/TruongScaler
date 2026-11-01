@@ -6,7 +6,7 @@ import TruongScalerCore
 
 /// Extracts all image properties, EXIF/TIFF/GPS/MakerApple dictionaries, RAW white balance/matrices,
 /// and HDR Gain Maps via `ImageIO`.
-/// Specification: `docs/DEVELOPMENT.md` Section 2.1.
+/// Specification: `README.md`
 public struct MetadataExtractor: Sendable {
     public static let rawFileExtensions: Set<String> = [
         "cr2", "cr3", "arw", "nef", "nrw", "dng", "raf", "orf", "rw2", "pef", "srw"

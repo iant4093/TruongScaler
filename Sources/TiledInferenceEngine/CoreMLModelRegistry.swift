@@ -2,7 +2,7 @@ import Foundation
 import CoreML
 import TruongScalerCore
 
-/// Canonical CoreML `.mlpackage` model identifiers (`docs/DEVELOPMENT.md` Section 1.1).
+/// Canonical CoreML `.mlpackage` model identifiers (`README.md`).
 public enum CoreMLModelIdentifier: String, CaseIterable, Sendable {
     case quickSRx2_256 = "QuickSRNet_Large_x2_256"
     case quickSRx2_192 = "QuickSRNet_Large_x2_192"
@@ -54,7 +54,7 @@ public enum ModelExecutionTier: Sendable, Equatable {
     }
 }
 
-/// Model-availability policy for `CoreMLModelRegistry` (`docs/DEVELOPMENT.md` Section 6,
+/// Model-availability policy for `CoreMLModelRegistry` (`README.md`,
 /// contract §8).
 ///
 /// `.allowDeterministicFallback` is intended **only** for explicit CI/test selection. It preserves the
@@ -84,7 +84,7 @@ public enum CoreMLPredictionStage: Sendable, Equatable {
 
 /// Manages CoreML `.mlpackage` / `.mlmodelc` loading, dynamic `MLComputeUnits` switching,
 /// and stride-safe `MLMultiArray` tensor marshaling.
-/// Specification: `docs/DEVELOPMENT.md` Section 1.
+/// Specification: `README.md`
 public actor CoreMLModelRegistry {
     private var loadedModels: [CoreMLModelIdentifier: MLModel] = [:]
     private var compiledURLCache: [CoreMLModelIdentifier: URL] = [:]

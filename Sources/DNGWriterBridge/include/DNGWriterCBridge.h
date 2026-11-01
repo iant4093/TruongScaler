@@ -47,7 +47,7 @@ typedef struct {
 ///
 /// The writer produces an uncompressed 16-bit, 3-samples-per-pixel rendered
 /// LinearRaw DNG (PhotometricInterpretation = 34892) holding absolute linear
-/// Display P3 components (see `docs/DEVELOPMENT.md`):
+/// Display P3 components (see `README.md`):
 ///
 /// * SDR (`sampleFormat = 1`, no ProfileDynamicRange): `q = round(clamp(v,0,1) * 65535)`,
 ///   DNGVersion 1.4.0.0, ColorimetricReference 1, WhiteLevel 65535, BaselineExposure 0.

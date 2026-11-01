@@ -85,6 +85,24 @@ def main() -> int:
     if "truongnoiser" not in (info.get("LSApplicationQueriesSchemes") or []):
         failures.append("LSApplicationQueriesSchemes missing truongnoiser")
 
+    # A portable Open In document must be discoverable in the actual installed bundle.
+    own = "noiser" if BUNDLE_ID.endswith("truongnoiser") else "scaler"
+    companion = "scaler" if own == "noiser" else "noiser"
+    own_type = "com.iantruong.imagingsuite.handoff." + own
+    handled = {uti for entry in info.get("CFBundleDocumentTypes", [])
+               if entry.get("CFBundleTypeRole") == "Viewer" and entry.get("LSHandlerRank") == "Owner"
+               for uti in entry.get("LSItemContentTypes", [])}
+    if handled != {own_type}:
+        failures.append(f"portable handoff document handler mismatch: {handled}")
+    for key, family in (("UTExportedTypeDeclarations", own), ("UTImportedTypeDeclarations", companion)):
+        declarations = info.get(key, [])
+        expected_type = "com.iantruong.imagingsuite.handoff." + family
+        matches = [entry for entry in declarations if entry.get("UTTypeIdentifier") == expected_type]
+        if len(matches) != 1 or matches[0].get("UTTypeTagSpecification", {}).get("public.filename-extension") != ["truong" + family + "handoff"]:
+            failures.append(f"missing/invalid portable document type: {expected_type}")
+    if info.get("LSSupportsOpeningDocumentsInPlace") is not False:
+        failures.append("portable handoff must import its own document copy")
+
     orientations = set(info.get("UISupportedInterfaceOrientations") or [])
     for required in ("UIInterfaceOrientationPortrait", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"):
         if required not in orientations:
