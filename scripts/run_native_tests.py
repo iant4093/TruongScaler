@@ -145,7 +145,7 @@ run("hosted-ui", ["xcodebuild", "-jobs", jobs, "-xctestrun", str(configured),
     "-destination", "platform=iOS Simulator,id=" + sim, "-resultBundlePath", str(result_bundle),
     "-collect-test-diagnostics", "never", "test-without-building"])
 if capture_dir:
-    for name in ("input-library.png", "processed-viewer.png", "output-library.png", "model-settings.png", "provenance.json"):
+    for name in ("input-library.png", "processed-viewer.png", "output-library.png", "model-settings.png", "detail-comparison.png", "provenance.json"):
         if not (capture_path / name).is_file():
             raise SystemExit("Requested documentation capture did not produce " + name)
 print("PASS: " + str(len(suites)) + " selected iOS package suites and app-hosted UIKit tests executed.", flush=True)

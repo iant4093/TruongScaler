@@ -28,7 +28,7 @@ The app bundles **three choices and six compiled variants**, with 192 and 256 in
 
 ## Screenshots
 
-Current screenshots show actual production SwiftUI/UIKit screens captured in an iOS Simulator at 1206 × 2622, using temporary libraries and CC0 photo fixtures. The viewer shows a saved native 2× HAT-S result reopened through its portable record; settings show HAT-S selected for the next job. Screens illustrate the interface; they do not establish physical-phone performance or image-quality superiority. Photography credits, source links and capture details are in [screenshot provenance](docs/screenshots/provenance.json).
+Current screenshots show actual production SwiftUI/UIKit screens captured in an iOS Simulator at 1206 × 2622, using temporary libraries and CC0 photo fixtures. The viewer shows a saved native 2× HAT-S result reopened through its portable record; the fifth screenshot zooms into its flower detail with the original on the left and the 2× result on the right. Settings show HAT-S selected for the next job. Screens illustrate the interface; they do not establish physical-phone performance or image-quality superiority. Photography credits, source links and capture details are in [screenshot provenance](docs/screenshots/provenance.json).
 
 <table>
   <tr>
@@ -49,6 +49,12 @@ Current screenshots show actual production SwiftUI/UIKit screens captured in an 
     <td width="50%" valign="top">
       <img src="docs/screenshots/model-settings.png" width="100%" alt="TruongScaler processing settings with HAT-S selected, its processing hint and export controls">
       <p align="center"><sub><b>Processing settings</b> · choose the model, export format and grain retention</sub></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top">
+      <img src="docs/screenshots/detail-comparison.png" width="50%" alt="Zoomed TruongScaler comparison showing the same flower detail: original on the left and the native 2× HAT-S result on the right">
+      <p align="center"><sub><b>Upscale detail</b> · original left, HAT-S 2× right, zoomed together in the app</sub></p>
     </td>
   </tr>
 </table>

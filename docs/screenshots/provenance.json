@@ -1,5 +1,26 @@
 {
   "capture" : "Actual production SwiftUI\/UIKit screens in an iOS simulator, 402×874 points at 3×; private temporary libraries",
+  "detailComparison" : {
+    "afterSide" : "Right: reopened saved native 2× HAT-S result",
+    "beforeSide" : "Left: original input projected into the shared output canvas",
+    "capture" : "Actual native shared before\/after viewer at 4× fitted zoom; no post-capture crop or enhancement",
+    "focusOutputPixel" : [
+      410,
+      290
+    ],
+    "outputCanvasPixels" : [
+      1024,
+      768
+    ],
+    "visibleOutputPixelRect" : {
+      "height" : 556.57711442786069,
+      "width" : 256,
+      "x" : 281.89718076285243,
+      "y" : 11.674958540630181
+    },
+    "zoomRelativeToFit" : 4,
+    "zoomScale" : 1.5703125
+  },
   "fixtureProvenance" : "Tests\/TiledInferenceEngineTests\/Fixtures\/quality\/fixture-provenance.json",
   "fixtureSHA256" : {
     "photo_flower_lr_512x384.png" : "c491d8dc73fa3bc22cbc566a32926c576da2406ee514bbcd5dbeffe850b775ab",
@@ -32,6 +53,7 @@
   "screenshots" : [
     "input-library.png",
     "processed-viewer.png",
+    "detail-comparison.png",
     "output-library.png",
     "model-settings.png"
   ],

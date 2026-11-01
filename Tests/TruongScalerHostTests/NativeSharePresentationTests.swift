@@ -134,6 +134,57 @@ final class NativeSharePresentationTests: XCTestCase {
         await withCheckedContinuation { continuation in library.present(viewer, animated: false) { continuation.resume() } }
         try await settle()
         try capture("processed-viewer")
+
+        // Zoom the real shared before/after surface onto the central flower's fine petals.
+        // Set scale before offset, just as the production double-tap path does: zoom(to:)
+        // can otherwise race the coordinator's centering-inset update. No image is cropped,
+        // resampled or composited after the native viewer renders this comparison.
+        func comparisonScrollView(_ view: UIView) -> SplitZoomScrollView? {
+            if let scroll = view as? SplitZoomScrollView { return scroll }
+            return view.subviews.compactMap { comparisonScrollView($0) }.first
+        }
+        let comparisonScroll = try XCTUnwrap(comparisonScrollView(viewer.view))
+        let coordinator = try XCTUnwrap(comparisonScroll.delegate as? SplitZoomCoordinator)
+        XCTAssertEqual(coordinator.canvasSize, CGSize(width: 1024, height: 768))
+        let fittedScale = comparisonScroll.minimumZoomScale
+        let detailScale = min(comparisonScroll.maximumZoomScale, fittedScale * 4)
+        let focus = CGPoint(x: 410, y: 290)
+        comparisonScroll.setZoomScale(detailScale, animated: false)
+        comparisonScroll.layoutIfNeeded()
+        let insets = comparisonScroll.contentInset
+        let minimumOffset = CGPoint(x: -insets.left, y: -insets.top)
+        let maximumOffset = CGPoint(
+            x: max(minimumOffset.x, comparisonScroll.contentSize.width - comparisonScroll.bounds.width + insets.right),
+            y: max(minimumOffset.y, comparisonScroll.contentSize.height - comparisonScroll.bounds.height + insets.bottom)
+        )
+        comparisonScroll.setContentOffset(CGPoint(
+            x: min(max(focus.x * detailScale - comparisonScroll.bounds.width / 2, minimumOffset.x), maximumOffset.x),
+            y: min(max(focus.y * detailScale - comparisonScroll.bounds.height / 2, minimumOffset.y), maximumOffset.y)
+        ), animated: false)
+        try await settle()
+        XCTAssertGreaterThan(comparisonScroll.zoomScale, fittedScale * 3.9)
+        XCTAssertEqual(comparisonScroll.zoomScale, detailScale, accuracy: 0.001)
+        XCTAssertEqual(coordinator.splitFraction, 0.5, accuracy: 0.001)
+        try capture("detail-comparison")
+        let visibleOutputRect = CGRect(
+            x: comparisonScroll.contentOffset.x / comparisonScroll.zoomScale,
+            y: comparisonScroll.contentOffset.y / comparisonScroll.zoomScale,
+            width: comparisonScroll.bounds.width / comparisonScroll.zoomScale,
+            height: comparisonScroll.bounds.height / comparisonScroll.zoomScale
+        )
+        let detailComparison: [String: Any] = [
+            "capture": "Actual native shared before/after viewer at 4× fitted zoom; no post-capture crop or enhancement",
+            "beforeSide": "Left: original input projected into the shared output canvas",
+            "afterSide": "Right: reopened saved native 2× HAT-S result",
+            "zoomRelativeToFit": Double(comparisonScroll.zoomScale / fittedScale),
+            "zoomScale": Double(comparisonScroll.zoomScale),
+            "outputCanvasPixels": [1024, 768],
+            "focusOutputPixel": [Double(focus.x), Double(focus.y)],
+            "visibleOutputPixelRect": [
+                "x": Double(visibleOutputRect.minX), "y": Double(visibleOutputRect.minY),
+                "width": Double(visibleOutputRect.width), "height": Double(visibleOutputRect.height)
+            ],
+        ]
         await withCheckedContinuation { continuation in library.dismiss(animated: false) { continuation.resume() } }
         vm.viewerDidDismiss()
         try await settle()
@@ -172,6 +223,7 @@ final class NativeSharePresentationTests: XCTestCase {
             "settings": "Current three-model production form with HAT-S (Best) selected for the next job",
             "qualityScope": "Screenshots illustrate the interface; they do not establish physical-phone performance or image-quality superiority",
             "screenshots": capturedNames,
+            "detailComparison": detailComparison,
             "fixtureSHA256": sourceHashes,
             "photographSources": attribution?["sources"] ?? [],
             "fixtureProvenance": "Tests/TiledInferenceEngineTests/Fixtures/quality/fixture-provenance.json",
